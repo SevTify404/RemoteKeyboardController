@@ -1,0 +1,9 @@
+pydantic
+fastapi[standard]
+python-jose
+python-multipart
+uvicorn[standard]
+python-dotenv
+argon2-cffi
+apscheduler
+pyinput
