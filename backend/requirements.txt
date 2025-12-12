@@ -6,4 +6,4 @@ uvicorn[standard]
 python-dotenv
 argon2-cffi
 apscheduler
-pyinput
+pynput
