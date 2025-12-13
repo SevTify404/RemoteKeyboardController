@@ -1,5 +1,4 @@
 from typing import Optional
-
 from pynput.keyboard import Controller, Key, KeyCode
 from logging import getLogger
 from asyncio import sleep
@@ -116,7 +115,11 @@ class CustomKeyboardController:
         if not self._is_a_controller_running or self._active_controller is None:
             raise exceptions.NoActiveControllerError("Aucun contrôleur actif pour presser une touche.")
 
-        self._active_controller.type(char)
+        try:
+            self._active_controller.type(char)
+        except self._active_controller.InvalidCharacterException as e:
+            logger.info(f"Le caractère '{char}' n'est pas valide pour la saisie : {e}")
+            return
 
         logger.info(f"Touche alphanumérique '{char}' pressée par le client '{self._current_client_alias}'.")
 
