@@ -45,10 +45,10 @@ class CustomKeyboardController:
             bool: True si le contrôleur a été démarré avec succès, une exception sinon.
 
         Raises:
-            ControllerAlreadyRunningError: Si un autre contrôleur est déjà en cours d'exécution.
+            ControllerAlreadyRunningException: Si un autre contrôleur est déjà en cours d'exécution.
         """
         if self._is_a_controller_running:
-            raise exceptions.ControllerAlreadyRunningError(
+            raise exceptions.ControllerAlreadyRunningException(
                 f"Un autre client ({self._current_client_alias}) contrôle déjà le clavier"
             )
 
@@ -83,14 +83,14 @@ class CustomKeyboardController:
             key_name: Le nom de la touche à presser (doit être dans self._keys).
 
         Raises:
-            NoActiveControllerError: Si aucun contrôleur n'est actif.
+            NoActiveControllerException: Si aucun contrôleur n'est actif.
             KeyError: Si la touche spécifiée n'existe pas.
         """
         if not self._is_a_controller_running or self._active_controller is None:
-            raise exceptions.NoActiveControllerError("Aucun contrôleur actif pour presser une touche.")
+            raise exceptions.NoActiveControllerException("Aucun contrôleur actif pour presser une touche.")
 
         if key_name not in self._keys:
-            raise exceptions.TouchNotExistError(f"La touche '{key_name}' n'existe pas dans les touches définies.")
+            raise exceptions.TouchNotExistException(f"La touche '{key_name}' n'existe pas dans les touches définies.")
 
         key_to_press = self._keys[key_name]
 
@@ -110,10 +110,10 @@ class CustomKeyboardController:
             char: Le caractère alphanumérique à presser.
 
         Raises:
-            NoActiveControllerError: Si aucun contrôleur n'est actif.
+            NoActiveControllerException: Si aucun contrôleur n'est actif.
         """
         if not self._is_a_controller_running or self._active_controller is None:
-            raise exceptions.NoActiveControllerError("Aucun contrôleur actif pour presser une touche.")
+            raise exceptions.NoActiveControllerException("Aucun contrôleur actif pour presser une touche.")
 
         try:
             self._active_controller.type(char)
