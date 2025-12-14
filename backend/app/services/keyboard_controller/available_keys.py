@@ -10,5 +10,3 @@ class AvailableKeyboardKeys(str, Enum):
     MUTE_KEY="MUTE"
     VOLUME_UP_KEY="VOLUME_UP"
     VOLUME_DOWN_KEY="VOLUME_DOWN"
-
-print( "UP" in AvailableKeyboardKeys['UP_KE'])
