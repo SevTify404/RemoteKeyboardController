@@ -24,6 +24,7 @@ class CustomKeyboardController:
         self._is_a_controller_running: bool = False
         self._active_controller: Optional[Controller] = None
         self._current_client_alias: Optional[str] = None
+        self.REALASE_DURATION: float = 0.01
 
     @property
     def is_a_controller_running(self) -> bool:
@@ -96,7 +97,7 @@ class CustomKeyboardController:
 
         self._active_controller.press(key_to_press)
 
-        await sleep(0.1)
+        await sleep(self.REALASE_DURATION)
 
         self._active_controller.release(key_to_press)
 
