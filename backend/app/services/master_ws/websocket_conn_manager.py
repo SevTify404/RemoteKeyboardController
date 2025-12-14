@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional, Any
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -10,12 +11,12 @@ class AvailableWebSocketScopes:
     waiting_for_connection_side: Optional[WebSocket] = None
 
     @property
-    def is_admin_connect(self) -> bool:
+    def is_admin_connected(self) -> bool:
         """Vérifie si le côté admin est connecté"""
         return self.admin_side is not None
 
     @property
-    def is_user_connect(self) -> bool:
+    def is_client_connected(self) -> bool:
         """Vérifie si un client est connecté"""
         return self.client_side is not None
 
@@ -43,6 +44,10 @@ class AvailableWebSocketScopes:
         self.client_side = None
         self.waiting_for_connection_side = None
 
+class SideAlias(str, Enum):
+    ADMIN_SIDE = "admin"
+    CLIENT_SIDE = "client"
+    WAITING_FOR_CONNECTION_SIDE = "waiting"
 
 class AppWebSocketConnectionManager:
     """Classe Sinleton pour gérer les connexions WebSocket dans l'application."""
@@ -77,12 +82,12 @@ class AppWebSocketConnectionManager:
     @property
     def client_is_connected(self) -> bool:
         """Vérifie si un client est connecté"""
-        return self._scopes.is_user_connect
+        return self._scopes.is_client_connected
 
     @property
     def admin_is_connected(self) -> bool:
         """Vérifie si le côté admin est connecté"""
-        return self._scopes.is_admin_connect
+        return self._scopes.is_admin_connected
 
     async def disconnect_admin(self, disconnect_reason: str = None) -> None:
         """Déconnecte le côté admin"""
@@ -113,54 +118,56 @@ class AppWebSocketConnectionManager:
 
 
 
-    async def _send_data_to_a_websocket(self, data: Any, to_admin: bool, is_json: bool=False) -> None:
+    async def _send_data_to_a_websocket(self, data: Any, target: SideAlias, is_json: bool = False) -> None:
         """
-        Fonction pour envoyer des données à un websocket précis
+        Fonction générique pour envoyer des données à un websocket précis.
         Args:
             data: Les données à envoyer
-            to_admin: True si les données doivent etre envoyées au côté admin, False pour le client
-            is_json: True si les données doivent etre formattées et envoyées en json
+            target: Le côté cible
+            is_json: True si les données doivent être envoyées en jsno
 
-        Returns:
-            None
         Raises:
-            WebSocketException: Si le websocket ciblé n'est pas/plus connecté
+            WebSocketDisconnect: Si le websocket ciblé n'est pas/plus connecté.
         """
+        websocket = None
+        if target == SideAlias.ADMIN_SIDE:
+            websocket = self._scopes.admin_side
+        elif target == SideAlias.CLIENT_SIDE:
+            websocket = self._scopes.client_side
+        elif target == SideAlias.WAITING_FOR_CONNECTION_SIDE:
+            websocket = self._scopes.waiting_for_connection_side
+
+        if websocket is None:
+            raise WebSocketDisconnect(code=1001, reason=f"{target.capitalize()} side is not connected")
 
         try:
             if is_json:
-                if to_admin:
-                    return await self._scopes.admin_side.send_json(data)
-
-                return await self._scopes.client_side.send_json(data)
-
+                await websocket.send_json(data)
             else:
-                if to_admin:
-                    return await self._scopes.admin_side.send_text(data)
-
-                return await self._scopes.client_side.send_text(data)
-
+                await websocket.send_text(data)
         except WebSocketDisconnect as e:
-            self._scopes.remove_admin_connection()
+            if target == SideAlias.ADMIN_SIDE:
+                self._scopes.remove_admin_connection()
+            elif target == SideAlias.CLIENT_SIDE:
+                self._scopes.remove_user_connection()
+            elif target == SideAlias.WAITING_FOR_CONNECTION_SIDE:
+                self._scopes.remove_waiting_for_connection()
             raise e
-        except AttributeError:
-            # L'objet websocket est n'est pas référencé
-            raise WebSocketDisconnect(code=1001, reason="Side is not connected")
 
     async def send_data_to_admin(self, data: Any, is_json: bool=False) -> None:
         """
         Envoie des données au côté admin via WebSocket
         Args:
-            data: Les données à envoyer
-            is_json: True si les données doivent etre envoyées en json
+            data: Les données à envoyer, un dictionnaire si is_json est True
+            is_json: True si les données doivent etre envoyées en json, dans ce cas data doit etre un dico
 
         Returns:
             None
         Raises:
             WebSocketException: Si l'admin n'est pas/plus connecté
         """
-        if self._scopes.is_admin_connect:
-            await self._send_data_to_a_websocket(data, to_admin=True, is_json=is_json)
+        if self._scopes.is_admin_connected:
+            await self._send_data_to_a_websocket(data, target=SideAlias.ADMIN_SIDE, is_json=is_json)
         else:
             raise WebSocketDisconnect(code=1001, reason="Admin side is not connected")
 
@@ -168,19 +175,73 @@ class AppWebSocketConnectionManager:
         """
         Envoie des données au client via WebSocket
         Args:
-            data: Les données à envoyer
-            is_json: True si les données doivent etre envoyées en json
+            data: Les données à envoyer, un dictionnaire si is_json est True
+            is_json: True si les données doivent etre envoyées en json,dans ce cas data doit etre un dico
 
         Returns:
             None
         Raises:
             WebSocketException: Si le client n'est pas/plus connecté
         """
-        if self._scopes.is_admin_connect:
-            await self._send_data_to_a_websocket(data, to_admin=False, is_json=is_json)
+        if self._scopes.is_client_connected:
+            await self._send_data_to_a_websocket(data, target=SideAlias.CLIENT_SIDE, is_json=is_json)
         else:
             raise WebSocketDisconnect(code=1001, reason="Admin side is not connected")
 
+    async def send_data_to_waiting(self, data: Any, is_json: bool = False) -> None:
+        """
+        Envoie des données au côté 'waiting_for_connection_side' via WebSocket.
+        Args:
+            data: Les données à envoyer.
+            is_json: True si les données doivent être envoyées en json.
+
+        Raises:
+            WebSocketDisconnect: Si le côté 'waiting' n'est pas/plus connecté.
+        """
+        await self._send_data_to_a_websocket(data, target=SideAlias.WAITING_FOR_CONNECTION_SIDE, is_json=is_json)
+
+    async def send_binary_data_to_admin(self, data: bytes) -> None:
+        """
+        Envoie des données binaires au côté admin via WebSocket
+        Args:
+            data: Les données binaires à envoyer
+
+        Returns:
+            None
+        Raises:
+            WebSocketException: Si l'admin n'est pas/plus connecté
+        """
+        if self._scopes.is_admin_connected:
+            await self._send_data_to_a_websocket(data, target=SideAlias.ADMIN_SIDE)
+        else:
+            raise WebSocketDisconnect(code=1001, reason="Admin side is not connected")
+
+    async def send_binary_data_to_client(self, data: bytes) -> None:
+        """
+        Envoie des données binaires au client via WebSocket
+        Args:
+            data: Les données binaires à envoyer
+
+        Returns:
+            None
+        Raises:
+            WebSocketException: Si le client n'est pas/plus connecté
+        """
+        if self._scopes.is_client_connected:
+            await self._send_data_to_a_websocket(data, target=SideAlias.WAITING_FOR_CONNECTION_SIDE)
+        else:
+            raise WebSocketDisconnect(code=1001, reason="Client side is not connected")
+
+    async def send_binary_data_to_waiting(self, data: bytes) -> None:
+        """
+        Envoie des données binaires au côté 'waiting_for_connection_side' via WebSocket.
+        Args:
+            data: Les données binaires à envoyer.
+
+        Raises:
+            WebSocketDisconnect: Si le côté 'waiting' n'est pas/plus connecté.
+        """
+        await self._send_data_to_a_websocket(data, target=SideAlias.WAITING_FOR_CONNECTION_SIDE)
 
 
 app_websocket_connection_manager = AppWebSocketConnectionManager()
