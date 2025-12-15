@@ -123,5 +123,3 @@ class CustomKeyboardController:
             return
 
         logger.info(f"Touche alphanumérique '{char}' pressée par le client '{self._current_client_alias}'.")
-
-app_keyboard_controller = CustomKeyboardController()

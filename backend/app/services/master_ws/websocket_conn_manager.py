@@ -215,5 +215,3 @@ class AppWebSocketConnectionManager:
             return await websocket.close(reason=disconnect_reason)
         except WebSocketDisconnect:
             pass
-
-app_websocket_manager = AppWebSocketConnectionManager()
