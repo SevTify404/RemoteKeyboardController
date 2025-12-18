@@ -16,6 +16,7 @@ class ChallengeSchema(BaseModel):
 class PinSchema(BaseModel):
   """Schema pour valider un PIN generer"""
 
+  pin_id: UUID
   challenge_id: UUID
   pin_code: str
   attempts: int = 0
