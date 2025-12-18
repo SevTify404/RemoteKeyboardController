@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import secrets
 import hmac
+from uuid import uuid4
 
 from typing import Union
 from uuid import UUID
@@ -16,36 +17,40 @@ class PinManager:
         self._pins: dict[UUID, PinSchema] = {}
 
 
-    def get_pin(self, challenge_id: UUID) -> Union[PinSchema, None]:
+    def get_pin(self, pin_code: str) -> Union[PinSchema, None]:
       """funct pour lire un PIN generer"""
 
-      pin = self._pins.get(challenge_id)
-      return pin
+      for pin in self._pins.values():
+        if pin.pin_code == pin_code:
+          return pin
+        
+      return None
     
     
-    def create_pin(self, challenge_id) -> PinSchema:
+    def create_pin(self, challenge_id: UUID) -> PinSchema:
       """funct pour creer un PIN"""
 
       created_pin = PinSchema(
+        pin_id=uuid4(),
         challenge_id=challenge_id,
         pin_code=f"{secrets.randbelow(1_000_000):06}",
         created_at=datetime.now(),
         expires_at=datetime.now() + timedelta(minutes=self.ttl_minutes)
       )
       
-      self._pins[created_pin.challenge_id] = created_pin
+      self._pins[created_pin.pin_id] = created_pin
       
       return created_pin
       
       
       
-    def is_valid_pin(self, challenge_id: UUID, given_pin: str) -> bool:
+    def is_valid_pin(self, given_pin: str) -> bool:
       """funct pr verifer la validiter d'un PIN/et aussi le blocquer si 
       trop de tentative"""
 
-      pin = self.get_pin(challenge_id)
+      pin = self.get_pin(given_pin)
       
-      if not pin or pin.used:
+      if not pin or pin.used or pin.blocked:
         return False
       
       if pin.expires_at < datetime.now():
@@ -61,10 +66,10 @@ class PinManager:
       return True
     
     
-    def mark_pin_as_used(self, challenge_id: UUID) -> None:
+    def mark_pin_as_used(self, pin_code: str) -> None:
       """funct pour marquer un pin comme deja utiliser"""
 
-      pin = self.get_pin(challenge_id)
+      pin = self.get_pin(pin_code)
 
       if pin: 
         pin.used = True
