@@ -1,5 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum as enum
+<<<<<<< HEAD
+=======
+
+>>>>>>> 849c251ebeac847e0a8466922a682f4ab0fd3edf
 
 
 @dataclass
@@ -15,6 +19,7 @@ class ErrorMessages(str, enum):
     INVALID_PIN = "INVALID PIN"
     UNFOUND_PIN = "PIN NOT FOUND"
     BLOCKED_PIN = "PIN BLOCKED DUE TO MAX ATTEMPTS"
+<<<<<<< HEAD
     CHALLENGE_TIME_OUT = "CHALLENGE HAS EXPIRED"
     ERROR_MESSAGE = "Erreur interne du serveur. veuillez réessayer."
 
@@ -24,4 +29,9 @@ class WssTypeMessage(str, enum):
     CHALLENGE_VERIFIED = "CHALLENGE_VERIFIED"
     CHALLENGE_EXPIRED = "CHALLENGE_EXPIRED"
 
+=======
+    CHALLENGE_EXPIRED = "CHALLENGE HAS EXPIRED"
+    ERROR_MESSAGE = "Erreur interne du serveur. veuillez réessayer."
+
+>>>>>>> 849c251ebeac847e0a8466922a682f4ab0fd3edf
     
