@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from enum import Enum as enum
 
 
-
 @dataclass
 class ApiTags:
     AUTHENTIFICATION: str = "Authentification"
@@ -16,7 +15,13 @@ class ErrorMessages(str, enum):
     INVALID_PIN = "INVALID PIN"
     UNFOUND_PIN = "PIN NOT FOUND"
     BLOCKED_PIN = "PIN BLOCKED DUE TO MAX ATTEMPTS"
-    CHALLENGE_EXPIRED = "CHALLENGE HAS EXPIRED"
+    CHALLENGE_TIME_OUT = "CHALLENGE HAS EXPIRED"
     ERROR_MESSAGE = "Erreur interne du serveur. veuillez réessayer."
+
+class WssTypeMessage(str, enum):
+    ## message pour type d'action en wss
+    CHALLENGE_CREATED = "NEW_CHALLENGE"
+    CHALLENGE_VERIFIED = "CHALLENGE_VERIFIED"
+    CHALLENGE_EXPIRED = "CHALLENGE_EXPIRED"
 
     

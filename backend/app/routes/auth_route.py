@@ -1,13 +1,12 @@
 import traceback
 from fastapi import APIRouter
-from . import ApiTags, ErrorMessages
+from . import ApiTags, ErrorMessages, WssTypeMessage
 from typing import Union
 from app.schemas.base_schema import ApiBaseResponse
 from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest, ChallengeResponse
-from app.utils.security.challenge_manager import ChallengeManager
-from app.utils.security.pin_manager import PinManager
+from app.services.master_ws.websocket_conn_manager import app_websocket_connection_manager
 from app.utils.security.all_instances import (
-  pin_manager, challenge_manager, device_manager, store_manager
+  pin_manager, challenge_manager, device_manager
 )
 
 
@@ -45,7 +44,7 @@ def create_challenge() -> ApiBaseResponse[Union[ChallengeResponse, str]]:
   "/verify",
   response_model=ApiBaseResponse[Union[VerifyAuthResponse, str]]
 )
-def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[VerifyAuthResponse, str]]:
+async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[VerifyAuthResponse, str]]:
   """Route pour permettre de verifier les authentification(qrcode/pin). c'est vers 
   cette route que vous allez envoyer les données"""
   
@@ -55,7 +54,7 @@ def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[VerifyAu
       
       if not challenge_manager.is_valid(chall_data.challenge_id):
         return ApiBaseResponse.success_response(
-          f"{ErrorMessages.UNEXIST_CHALLENGE} or {ErrorMessages.CHALLENGE_USED} or {ErrorMessages.CHALLENGE_EXPIRED}"
+          f"{ErrorMessages.UNEXIST_CHALLENGE} or {ErrorMessages.CHALLENGE_USED} or {ErrorMessages.CHALLENGE_TIME_OUT}"
         )
         
       challenge_manager.mark_challenge_as_used(chall_data.challenge_id)
@@ -71,10 +70,10 @@ def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[VerifyAu
         
       if not challenge_manager.is_valid(pin_obj.challenge_id):
         return ApiBaseResponse.success_response(
-          f"{ErrorMessages.CHALLENGE_EXPIRED} or {ErrorMessages.CHALLENGE_USED}"
+          f"{ErrorMessages.CHALLENGE_TIME_OUT} or {ErrorMessages.CHALLENGE_USED}"
         )  
       
-      pin_manager.mark_pin_as_used(pin_obj.challenge_id)
+      pin_manager.mark_pin_as_used(pin_obj.pin_code)
       
     else:
       return ApiBaseResponse.success_response(
@@ -89,6 +88,16 @@ def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[VerifyAu
       device_token=device_token.token,
       session_token=session_token.token,
       session_expires_at=session_token.expires_at
+    )
+    
+    await app_websocket_connection_manager.send_data_to_admin(
+      {
+       "type": WssTypeMessage.CHALLENGE_VERIFIED,
+       "data": {
+         "device_id": str(data.device_id)
+       }
+      },
+      is_json=True
     )
     
     return ApiBaseResponse.success_response(data)
