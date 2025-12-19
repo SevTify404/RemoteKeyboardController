@@ -93,7 +93,7 @@ async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[Ve
     await app_websocket_connection_manager.send_data_to_admin(
       {
        "type": WssTypeMessage.CHALLENGE_VERIFIED,
-       "payload": {
+       "data": {
          "device_id": str(data.device_id)
        }
       },
