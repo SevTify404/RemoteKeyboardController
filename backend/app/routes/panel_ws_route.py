@@ -2,8 +2,8 @@ import asyncio
 from fastapi import WebSocket, WebSocketDisconnect
 from app.routes import WssTypeMessage
 from app.routes.ws_router import router
+from app.services import app_websocket_manager
 from app.schemas.panel_ws_schema import ChallengePayload, WsPayloadMessage
-from app.services.master_ws.websocket_conn_manager import app_websocket_connection_manager
 from app.utils.security.all_instances import (
   pin_manager, challenge_manager, 
 )
@@ -12,7 +12,7 @@ from app.utils.security.all_instances import (
 ## schedulers pour rafraichir le changement sur PC
 async def rotation_loop():
   """Tâche de fond pour rafraîchir le QR/PIN toutes les 5 min"""
-  while app_websocket_connection_manager.admin_is_connected:
+  while app_websocket_manager.admin_is_connected:
     try:
       
       challenge = challenge_manager.create_challenge()
@@ -29,7 +29,7 @@ async def rotation_loop():
         data=challenge_payload
       )
       
-      await app_websocket_connection_manager.send_data_to_admin(
+      await app_websocket_manager.send_data_to_admin(
         message.model_dump(mode="json"), 
         is_json=True
       )
@@ -40,11 +40,10 @@ async def rotation_loop():
     await asyncio.sleep(300)
 
 
-
 @router.websocket("/ws/panel")
 async def panel_websocket(websocket: WebSocket):
   
-  await app_websocket_connection_manager.connect_admin(websocket)
+  await app_websocket_manager.connect_admin(websocket)
 
   ## creation de la tache asynchrone
   refresh_task = asyncio.create_task(rotation_loop())
@@ -56,5 +55,5 @@ async def panel_websocket(websocket: WebSocket):
       
   except WebSocketDisconnect:
     refresh_task.cancel()
-    await app_websocket_connection_manager.disconnect_admin("Le coté Admin Panel s'est déconnecter") 
+    await app_websocket_manager.disconnect_admin("Le coté Admin Panel s'est déconnecter") 
 
