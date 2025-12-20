@@ -5,6 +5,7 @@ from typing import Union
 from app.schemas.base_schema import ApiBaseResponse
 from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest, ChallengeResponse
 from app.services.master_ws.websocket_conn_manager import app_websocket_connection_manager
+from app.schemas.panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
 from app.utils.security.all_instances import (
   pin_manager, challenge_manager, device_manager
 )
@@ -13,31 +14,31 @@ from app.utils.security.all_instances import (
 router = APIRouter("/auth", ApiTags.AUTHENTIFICATION)
 
 
-@router.get(
-  "/challenge",
-  response_model=ApiBaseResponse[Union[ChallengeResponse, str]]
-)
-def create_challenge() -> ApiBaseResponse[Union[ChallengeResponse, str]]:
-  """Route pour creer un challenge. Vous allez recevoir le id du 
-  challenge(utiliser ca pour le qrcode) et aussi le pin a afficher pour alternative"""
+# @router.get(
+#   "/challenge",
+#   response_model=ApiBaseResponse[Union[ChallengeResponse, str]]
+# )
+# def create_challenge() -> ApiBaseResponse[Union[ChallengeResponse, str]]:
+#   """Route pour creer un challenge. Vous allez recevoir le id du 
+#   challenge(utiliser ca pour le qrcode) et aussi le pin a afficher pour alternative"""
 
-  try:
+#   try:
     
-    challenge = challenge_manager.create_challenge()
-    pin = pin_manager.create_pin(challenge.challenge_id)
+#     challenge = challenge_manager.create_challenge()
+#     pin = pin_manager.create_pin(challenge.challenge_id)
     
-    data = ChallengeResponse(
-      challenge_id=challenge.challenge_id,
-      pin_code=pin,
-      expires_at=challenge.expires_at
-    )
+#     data = ChallengeResponse(
+#       challenge_id=challenge.challenge_id,
+#       pin_code=pin,
+#       expires_at=challenge.expires_at
+#     )
     
-    return ApiBaseResponse.success_response(data)
+#     return ApiBaseResponse.success_response(data)
 
-  except Exception as e:
-    traceback.print_exc()
-    print(f"Exception {e.__class__.__name__}: {e}")
-    return ApiBaseResponse.error_response(ErrorMessages.ERROR_MESSAGE)
+#   except Exception as e:
+#     traceback.print_exc()
+#     print(f"Exception {e.__class__.__name__}: {e}")
+#     return ApiBaseResponse.error_response(ErrorMessages.ERROR_MESSAGE)
 
 
 @router.post(
@@ -90,13 +91,18 @@ async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[Ve
       session_expires_at=session_token.expires_at
     )
     
+    succes_data = AuthSuccessPayload(
+      device_id=data.device_id,
+      session_expires_at=data.session_expires_at
+    )
+    
+    success_message = WsPayloadMessage(
+      type=WssTypeMessage.CHALLENGE_CREATED,
+      data=succes_data
+    )
+    
     await app_websocket_connection_manager.send_data_to_admin(
-      {
-       "type": WssTypeMessage.CHALLENGE_VERIFIED,
-       "data": {
-         "device_id": str(data.device_id)
-       }
-      },
+      data=success_message.model_dump(mode="json"),
       is_json=True
     )
     
