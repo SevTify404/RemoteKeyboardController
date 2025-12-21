@@ -17,10 +17,7 @@ async def clean_up_task():
             print(f"Suppressions des sessions exirées")
         except Exception as e:
             print(f"Exception {e.__class__.__name__}: {e}")
-<<<<<<< HEAD
-=======
             traceback.print_exc()
->>>>>>> 7b237ab (back-feat/security: Mise en place de la route websocket/panel)
             
         await asyncio.sleep(3600)
 
