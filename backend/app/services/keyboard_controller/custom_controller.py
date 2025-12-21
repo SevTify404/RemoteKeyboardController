@@ -1,12 +1,10 @@
 from asyncio import Lock
 from typing import Optional
 from pynput.keyboard import Controller
-from logging import getLogger
 from app.services.keyboard_controller import exceptions
 from app.services.keyboard_controller._custom_touchs import KeyboardTouchs
 from app.services.keyboard_controller.availables import AvailableKeys, key_map
-
-logger = getLogger(__name__)
+from app.main import app_loger
 
 class CustomKeyboardController:
     """Classe singleton personnalisé pour controler le clavier par rapport à l'app dans son ensemble."""
@@ -46,9 +44,9 @@ class CustomKeyboardController:
         """
         async with self._state_lock:
             if self._is_a_controller_running:
-                raise exceptions.ControllerAlreadyRunningException(
-                    f"Un autre client ({self._current_client_alias}) contrôle déjà le clavier"
-                )
+                msg = f"Un autre client ({self._current_client_alias}) contrôle déjà le clavier"
+                app_loger.warning(msg)
+                raise exceptions.ControllerAlreadyRunningException(msg)
 
             self._active_controller = Controller()
 
@@ -56,7 +54,7 @@ class CustomKeyboardController:
 
             self._current_client_alias = client_alias
 
-        logger.info(f"Le client '{client_alias}' a démarré le contrôle du clavier.")
+        app_loger.info(f"Le client '{client_alias}' a démarré le contrôle du clavier.")
         return True
 
     async def stop_controller(self) -> None:
@@ -65,14 +63,14 @@ class CustomKeyboardController:
         """
         async with self._state_lock:
             if not self._is_a_controller_running:
-                logger.warning("Aucun client actif à arrêter.")
+                app_loger.warning("Aucun client actif à arrêter.")
                 return
             self._active_controller = None
             self._is_a_controller_running = False
             stopped_client = self._current_client_alias
             self._current_client_alias = None
 
-        logger.info(f"Client '{stopped_client}' déconnecté du controle du clavier.")
+        app_loger.info(f"Client '{stopped_client}' déconnecté du controle du clavier.")
 
     async def press_key(self, key_name: AvailableKeys) -> None:
         """
@@ -95,7 +93,7 @@ class CustomKeyboardController:
             client_alias = self._current_client_alias
 
         await key_to_press.execute_the_press(controller=controller)
-        logger.info(f"Touche '{key_name}' pressée par le client '{client_alias}'.")
+        app_loger.info(f"Touche '{key_name}' pressée par le client '{client_alias}'.")
 
     async def type_a_string(self, char: str) -> None:
         """
@@ -113,7 +111,7 @@ class CustomKeyboardController:
         try:
             controller.type(char)
         except self._active_controller.InvalidCharacterException as e:
-            logger.info(f"Le caractère '{char}' n'est pas valide pour la saisie : {e}")
+            app_loger.info(f"Le caractère '{char}' n'est pas valide pour la saisie : {e}")
             return
 
-        logger.info(f"Touche alphanumérique '{char}' pressée par le client '{client_alias}'.")
+        app_loger.info(f"Touche alphanumérique '{char}' pressée par le client '{client_alias}'.")

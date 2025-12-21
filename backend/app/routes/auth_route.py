@@ -6,13 +6,13 @@ from typing import Union
 from app.schemas.base_schema import ApiBaseResponse
 from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest
 from app.services import app_websocket_manager
-from app.schemas.panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
+from app.schemas.admin_panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
 from app.utils.security.all_instances import (
   pin_manager, challenge_manager, device_manager
 )
+from ..main import app_loger
 
-
-router = APIRouter("/auth", ApiTags.AUTHENTIFICATION)
+router = APIRouter(prefix="/auth", tags=[ApiTags.AUTHENTIFICATION])
 
 
 # @router.get(
@@ -110,7 +110,7 @@ async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[Ve
     return ApiBaseResponse.success_response(succes_data)
   
   except Exception as e:
-    print(f"Exception {e.__class__.__name__}: {e}")
+    app_loger.exception(f"Exception {e.__class__.__name__}: {e}")
     logging.exception("Une erreur s'est produite")
     traceback.print_exc()
     return ApiBaseResponse.error_response(ErrorMessages.ERROR_MESSAGE)

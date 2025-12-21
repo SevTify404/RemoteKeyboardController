@@ -22,8 +22,10 @@ class DeviceTokenManager:
       token=secrets.token_urlsafe(32),
       created_at=datetime.now()
     )
-    
+
+
     self._store.save_device_token(dev_token)
+    return dev_token
 
 
   def create_session_token(self, device_id: UUID) -> SessionTokenSchema:
@@ -38,3 +40,5 @@ class DeviceTokenManager:
     )
     
     self._store.save_session_token(sess_token)
+
+    return sess_token

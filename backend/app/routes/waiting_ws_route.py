@@ -1,8 +1,7 @@
 import asyncio
-import logging
 import traceback
 from app.routes import WssTypeMessage
-from app.schemas.panel_ws_schema import ChallengePayload, WsPayloadMessage
+from app.schemas.admin_panel_ws_schema import ChallengePayload, WsPayloadMessage
 from .ws_router import router
 from app.services import app_websocket_manager
 from app.utils.security.all_instances import (
@@ -10,6 +9,8 @@ from app.utils.security.all_instances import (
 )
 
 from fastapi import WebSocket, WebSocketDisconnect
+
+from ..main import app_loger
 
 
 ## schedulers pour rafraichir le changement sur PC
@@ -38,15 +39,14 @@ async def rotation_loop():
       )
       
     except Exception as e:
-      print(f"Exception {e.__class__.__name__}: {e}")
-      logging.exception("Une erreur s'est produite")
+      app_loger.exception(f"Une Exception s'est produite : {e.__class__.__name__}: {e}")
       traceback.print_exc()
 
     await asyncio.sleep(300)
 
 
 @router.websocket(
-  "/ws/waiting"
+  "/waiting"
 )
 async def waiting_connexion(websocket: WebSocket):
   

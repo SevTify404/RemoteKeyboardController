@@ -1,10 +1,10 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from app.routes.ws_router import router
 from app.services import app_websocket_manager
-from app.schemas.panel_ws_schema import WsPayloadMessage
+from app.schemas.admin_panel_ws_schema import WsPayloadMessage
 
 
-@router.websocket("/ws/panel")
+@router.websocket("/panel")
 async def panel_websocket(websocket: WebSocket):
   
   await app_websocket_manager.connect_admin(websocket)
