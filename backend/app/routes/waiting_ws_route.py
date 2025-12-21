@@ -2,7 +2,7 @@ import asyncio
 import logging
 import traceback
 from app.routes import WssTypeMessage
-from app.schemas.panel_ws_schema import ChallengePayload, WsPayloadMessage
+from app.schemas.admin_panel_ws_schema import ChallengePayload, WsPayloadMessage
 from .ws_router import router
 from app.services import app_websocket_manager
 from app.utils.security.all_instances import (

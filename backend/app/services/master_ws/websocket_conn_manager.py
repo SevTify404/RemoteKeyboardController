@@ -3,7 +3,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 from app.services.master_ws.aliases import SideAlias
 from app.services.master_ws.scopes import AvailableWebSocketScopes
-from app.schemas.panel_ws_schema import WsPayloadMessage
+from app.schemas.admin_panel_ws_schema import WsPayloadMessage
 
 
 class AppWebSocketConnectionManager:

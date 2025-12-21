@@ -1,10 +1,10 @@
-from dataclasses import Field
 from typing import Any, Self, Union, Optional
 from pydantic import BaseModel, model_validator
 from uuid import UUID
 from datetime import datetime
 
 from app.routes import WssTypeMessage
+from app.schemas.control_panel_ws_schema import ControlPanelWSMessage
 from app.services.keyboard_controller.availables import AvailableKeys
 
 
@@ -23,19 +23,11 @@ class AuthSuccessPayload(BaseModel):
   session_expires_at: datetime
 
 
-class CommandPayload(BaseModel):
-  """Schema pour valider les types de commandes recus"""
-
-  action: AvailableKeys
-  value: Optional[Any] ## genre si type c'est UP_VOLUME alors value peu etre 75
-  created_at: datetime = Field(default_factory=datetime.now())
-
-
 class WsPayloadMessage(BaseModel):
   """schema pour valider les données JSON qui seront envoyer par ws"""
 
   type: WssTypeMessage
-  data: Union[ChallengePayload, AuthSuccessPayload, CommandPayload]
+  data: Union[ChallengePayload, AuthSuccessPayload, ControlPanelWSMessage]
 
   
   def is_related_to_authentification(self) -> bool:
@@ -59,7 +51,7 @@ class WsPayloadMessage(BaseModel):
   def command_action(self) -> Optional[AvailableKeys]:
     """Return l'action que le client veut faire ex: UP, DOWN, etc"""
 
-    if isinstance(self.data, CommandPayload):
+    if isinstance(self.data, ControlPanelWSMessage):
       return self.data.action
     
     return None
@@ -69,7 +61,7 @@ class WsPayloadMessage(BaseModel):
   def command_value(self) -> Any:
     """Return l'action que le client veut faire ex: UP, DOWN, etc"""
 
-    if isinstance(self.data, CommandPayload):
+    if isinstance(self.data, ControlPanelWSMessage):
       return self.data.value
     
     return None
@@ -84,7 +76,7 @@ class WsPayloadMessage(BaseModel):
     if self.is_related_to_authentification() and not isinstance(self.data, ChallengePayload):
       raise ValueError(f"{WssTypeMessage.CHALLENGE_CREATED} doit etre une correspondre a ChallengePayload")
 
-    if self.is_related_to_pptCommand() and not isinstance(self.data, CommandPayload):
+    if self.is_related_to_pptCommand() and not isinstance(self.data, ControlPanelWSMessage):
       raise ValueError(f"{WssTypeMessage.PPT_COMMAND} doit etre une correspondre a CommandPayload")
 
     return self

@@ -6,7 +6,7 @@ from typing import Union
 from app.schemas.base_schema import ApiBaseResponse
 from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest
 from app.services import app_websocket_manager
-from app.schemas.panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
+from app.schemas.admin_panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
 from app.utils.security.all_instances import (
   pin_manager, challenge_manager, device_manager
 )
