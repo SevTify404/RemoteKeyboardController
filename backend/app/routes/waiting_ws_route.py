@@ -40,6 +40,7 @@ async def rotation_loop():
     except Exception as e:
       print(f"Exception {e.__class__.__name__}: {e}")
       logging.exception("Une erreur s'est produite")
+      traceback.print_exc()
 
     await asyncio.sleep(300)
 
