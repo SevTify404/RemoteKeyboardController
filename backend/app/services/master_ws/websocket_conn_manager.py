@@ -1,6 +1,7 @@
 from typing import Any
 from fastapi import WebSocket, WebSocketDisconnect
 
+from app.main import app_loger
 from app.services.master_ws.aliases import SideAlias
 from app.services.master_ws.scopes import AvailableWebSocketScopes
 from app.schemas.admin_panel_ws_schema import WsPayloadMessage
@@ -94,11 +95,13 @@ class AppWebSocketConnectionManager:
         message = WsPayloadMessage(**data)
 
         if message.is_related_to_authentification():
-            print("Action refusé: Pas d'authentification sur le panel admin")
+            app_loger.warn("Action refusé: Pas d'authentification sur le panel admin")
             return None
-        
 
-        await self._send_data_to_a_websocket(data, target=SideAlias.ADMIN_SIDE, is_json=is_json)
+        try:
+            return await self._send_data_to_a_websocket(data, target=SideAlias.ADMIN_SIDE, is_json=is_json)
+        except WebSocketDisconnect:      # Fallback, on affiche juste un warning dans le terminal
+            app_loger.warning(f"Panel Admin Inactif, Message perdu : {data}")
 
     async def send_data_to_client(self, data: Any, is_json: bool=False) -> None:
         """
@@ -129,7 +132,7 @@ class AppWebSocketConnectionManager:
         message = WsPayloadMessage(**data)
 
         if message.is_related_to_pptCommand():
-            print("Action refsué: Aucune connexion établie")
+            app_loger.warning("Action refsué: Aucune connexion établie")
             return
 
         await self._send_data_to_a_websocket(data, target=SideAlias.WAITING_FOR_CONNECTION_SIDE, is_json=is_json)

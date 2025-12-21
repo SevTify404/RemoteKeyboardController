@@ -1,53 +1,102 @@
 from pydantic import ValidationError
 
+from app.routes import WssTypeMessage
 from app.routes.ws_router import router
+from app.schemas.admin_panel_ws_schema import WsPayloadMessage, Notification
 
 from app.services import app_websocket_manager, app_keyboard_controller
-from app.schemas.control_panel_ws_schema import ControlPanelWSMessage, AvailableMessageTypes
+from app.schemas.control_panel_ws_schema import ControlPanelWSMessage, AvailableMessageTypes, OutControlPanelWSMessage
 from fastapi import WebSocket, WebSocketDisconnect
 
-#TODO: Ajouter la gestion des erreurs et des logs notament pour les cas de WebSocketDisconnect
-@router.websocket("/ws/control-panel")
+from app.services.keyboard_controller.exceptions import ControllerAlreadyRunningException
+
+@router.websocket("/control-panel")
 async def control_panel_websocket(websocket: WebSocket):
     """WebSocket route pour le controle panel coté client"""
 
     await app_websocket_manager.connect_client(websocket)
-    # TODO: Ajjuster cete logique avec un try...catch
-    app_keyboard_controller.start_controller('Client Control Panel')
+
+    try:
+        app_keyboard_controller.start_controller('Client Control Panel')
+    except ControllerAlreadyRunningException as e:
+        await app_websocket_manager.send_data_to_admin(
+            data=WsPayloadMessage(
+                    type=WssTypeMessage.NOTIFY, data=Notification(message=str(e))
+                ).model_dump(),
+            is_json=True
+        )
+        await app_websocket_manager.disconnect_client()
+        return
 
     try:
         while True:
             raw_data = await websocket.receive_json()
 
             try:
-                data = ControlPanelWSMessage.model_validate_json(raw_data)
+                data = ControlPanelWSMessage.model_validate(raw_data)
             except ValidationError:
+                await app_websocket_manager.send_data_to_admin(
+                    data=WsPayloadMessage(
+                            type=WssTypeMessage.NOTIFY,
+                            data=Notification(
+                                message="Données de commandes reçu mais mal formatés, Impossible de traiter"
+                            )
+                        ).model_dump(),
+                    is_json=True
+                )
                 continue
 
-            else:
-                if data.message_type == AvailableMessageTypes.COMMAND:
-                    await app_keyboard_controller.press_key(data.payload.command)
-                    await app_websocket_manager.send_data_to_admin(data.model_dump_json(), is_json=True)
-                    continue
+            has_succeed = True
+            error_msg = None
 
-                elif data.message_type == AvailableMessageTypes.TYPING:
-                    await app_keyboard_controller.type_a_string(data.payload.text_to_type)
-                    await app_websocket_manager.send_data_to_admin(data.model_dump_json(), is_json=True)
-                    continue
+            if data.message_type == AvailableMessageTypes.COMMAND:
+                if not data.payload or data.payload.command is None:
+                    has_succeed = False
+                    error_msg = "Commande vide ou mal formatée"
+                else:
+                    try:
+                        await app_keyboard_controller.press_key(data.payload.command)
+                    except (KeyError, Exception) as e:
+                        has_succeed = False
+                        error_msg = str(e)
 
-                elif data.message_type == AvailableMessageTypes.ALERT:
-                    pass
-                    continue
+            elif data.message_type == AvailableMessageTypes.TYPING:
+                if not data.payload or data.payload.text_to_type is None:
+                    has_succeed = False
+                    error_msg = "Texte vide ou mal formaté"
+                else:
+                    try:
+                        await app_keyboard_controller.type_a_string(data.payload.text_to_type)
+                    except Exception as e:
+                        has_succeed = False
+                        error_msg = str(e)
 
-                elif data.message_type == AvailableMessageTypes.DISCONNECT:
-                    await app_websocket_manager.disconnect_client("Le coté Control Panel a demandé la déconnexion")
-                    await app_websocket_manager.send_data_to_admin("Le coté Control Panel Client s'est déconnecter")
-                    break
+            elif data.message_type == AvailableMessageTypes.DISCONNECT:
+                raise WebSocketDisconnect
 
-                elif data.message_type == AvailableMessageTypes.STATUS_UPDATE:
-                    pass
-                    continue
+            #Pas encore implémenté
+            elif data.message_type == AvailableMessageTypes.STATUS_UPDATE:
+                # TODO: Implémenter la mise à jour de statut
+                pass
 
+            await app_websocket_manager.send_data_to_admin(
+                data=WsPayloadMessage(
+                    type=WssTypeMessage.COMMAND,
+                    data=OutControlPanelWSMessage(
+                        succes=has_succeed,
+                        data=data if has_succeed else None,
+                        error=error_msg
+                    )
+                ).model_dump(),
+                is_json=True
+            )
     except WebSocketDisconnect:
-        await app_websocket_manager.disconnect_client("Le coté Control Panel Client s'est déconnecter")
-        await app_websocket_manager.send_data_to_admin("Le coté Control Panel Client s'est déconnecter")
+        await app_websocket_manager.disconnect_client()
+        await app_keyboard_controller.stop_controller()
+        await app_websocket_manager.send_data_to_admin(
+            data=WsPayloadMessage(
+                type=WssTypeMessage.NOTIFY,
+                data=Notification(message="Le client s'est déconnecté")
+            ).model_dump(),
+            is_json=True
+        )

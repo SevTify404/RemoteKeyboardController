@@ -7,6 +7,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.utils.security.all_instances import store_manager
 
+from logging import getLogger
+
+app_loger = getLogger("APP_LOG")
 
 async def clean_up_task():
     """Permet de mettoyer les sessions expirés pour eviter de saturer la ram"""
@@ -14,9 +17,9 @@ async def clean_up_task():
         try:
             
             store_manager.cleanup_expired_sessions()
-            print(f"Suppressions des sessions exirées")
+            app_loger.info(f"Suppressions des sessions exirées")
         except Exception as e:
-            print(f"Exception {e.__class__.__name__}: {e}")
+            app_loger.exception(f"Exception {e.__class__.__name__}: {e}")
             traceback.print_exc()
             
         await asyncio.sleep(3600)
@@ -35,18 +38,10 @@ async def lifespan(_ : FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app = FastAPI(lifespan=lifespan)
-
-
-
-# Liste des origines autorisées
-origins = [
-    "http://localhost:5173" ## url front en local
-]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = origins,
+    allow_origins = ['*'],
     allow_credentials=True,
     allow_methods = ['*'],
     allow_headers=["*"]
