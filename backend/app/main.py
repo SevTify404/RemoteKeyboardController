@@ -1,16 +1,32 @@
+import asyncio
 import traceback
 from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.utils.security.all_instances import store_manager
 
+
+async def clean_up_task():
+    """Permet de mettoyer les sessions expirés pour eviter de saturer la ram"""
+    while True:
+        try:
+            
+            store_manager.cleanup_expired_sessions()
+            print(f"Suppressions des sessions exirées")
+        except Exception as e:
+            print(f"Exception {e.__class__.__name__}: {e}")
+            traceback.print_exc()
+            
+        await asyncio.sleep(3600)
 
 # Lifespan : C'est lui qui va réguler le démarrage et l'extinction de l'app
 @asynccontextmanager
 async def lifespan(_ : FastAPI):
 
     #Code qui s'executera au démarrage de l'app FastApi
+    asyncio.create_task(clean_up_task())
 
     # On expose l'appplication jusqu'à sa fin
     yield
@@ -19,6 +35,9 @@ async def lifespan(_ : FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
+
+
 
 # Liste des origines autorisées
 origins = [

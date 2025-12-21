@@ -3,6 +3,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 from app.services.master_ws.aliases import SideAlias
 from app.services.master_ws.scopes import AvailableWebSocketScopes
+from app.schemas.panel_ws_schema import WsPayloadMessage
 
 
 class AppWebSocketConnectionManager:
@@ -89,6 +90,13 @@ class AppWebSocketConnectionManager:
         Raises:
             WebSocketException: Si l'admin n'est pas/plus connecté
         """
+        
+        message = WsPayloadMessage(**data)
+
+        if message.is_related_to_authentification():
+            print("Action refusé: Pas d'authentification sur le panel admin")
+            return None
+        
 
         await self._send_data_to_a_websocket(data, target=SideAlias.ADMIN_SIDE, is_json=is_json)
 
@@ -117,6 +125,12 @@ class AppWebSocketConnectionManager:
         Raises:
             WebSocketDisconnect: Si le côté 'waiting' n'est pas/plus connecté.
         """
+        
+        message = WsPayloadMessage(**data)
+
+        if message.is_related_to_pptCommand():
+            print("Action refsué: Aucune connexion établie")
+            return
 
         await self._send_data_to_a_websocket(data, target=SideAlias.WAITING_FOR_CONNECTION_SIDE, is_json=is_json)
 
