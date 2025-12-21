@@ -22,6 +22,6 @@ class WssTypeMessage(str, enum):
     ## message pour type d'action en wss
     CHALLENGE_CREATED = "NEW_CHALLENGE"
     CHALLENGE_VERIFIED = "AUTHENTIFICATION_SUCCESS"
-    CHALLENGE_EXPIRED = "CHALLENGE_EXPIRED"
+    PPT_COMMAND = "PPT_COMMAND"
 
     

@@ -1,10 +1,16 @@
+import logging
 import traceback
 from fastapi import APIRouter
 from . import ApiTags, ErrorMessages, WssTypeMessage
 from typing import Union
 from app.schemas.base_schema import ApiBaseResponse
+<<<<<<< HEAD
 from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest, ChallengeResponse
 from app.services.master_ws.websocket_conn_manager import app_websocket_connection_manager
+=======
+from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest
+from app.services import app_websocket_manager
+>>>>>>> 7b237ab (back-feat/security: Mise en place de la route websocket/panel)
 from app.schemas.panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
 from app.utils.security.all_instances import (
   pin_manager, challenge_manager, device_manager
@@ -97,20 +103,21 @@ async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[Ve
     )
     
     success_message = WsPayloadMessage(
-      type=WssTypeMessage.CHALLENGE_CREATED,
+      type=WssTypeMessage.CHALLENGE_VERIFIED,
       data=succes_data
     )
     
-    await app_websocket_connection_manager.send_data_to_admin(
+    await app_websocket_manager.send_data_to_waiting(
       data=success_message.model_dump(mode="json"),
       is_json=True
     )
     
-    return ApiBaseResponse.success_response(data)
+    return ApiBaseResponse.success_response(succes_data)
   
   except Exception as e:
-    traceback.print_exc()
     print(f"Exception {e.__class__.__name__}: {e}")
+    logging.exception("Une erreur s'est produite")
+    traceback.print_exc()
     return ApiBaseResponse.error_response(ErrorMessages.ERROR_MESSAGE)
     
   
