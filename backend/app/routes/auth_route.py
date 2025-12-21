@@ -4,13 +4,8 @@ from fastapi import APIRouter
 from . import ApiTags, ErrorMessages, WssTypeMessage
 from typing import Union
 from app.schemas.base_schema import ApiBaseResponse
-<<<<<<< HEAD
-from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest, ChallengeResponse
-from app.services.master_ws.websocket_conn_manager import app_websocket_connection_manager
-=======
 from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest
 from app.services import app_websocket_manager
->>>>>>> 7b237ab (back-feat/security: Mise en place de la route websocket/panel)
 from app.schemas.panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
 from app.utils.security.all_instances import (
   pin_manager, challenge_manager, device_manager
