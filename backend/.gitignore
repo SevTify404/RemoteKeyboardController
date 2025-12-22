@@ -41,6 +41,11 @@
 # *.iml
 # *.ipr
 
+# === Logs Application ===
+# Dossier des logs générés automatiquement
+logs/
+*.log
+
 # CMake
 cmake-build-*/
 
@@ -259,3 +264,7 @@ cython_debug/
 # *.iml
 # *.ipr
 
+# === Logs Application ===
+# Dossier des logs générés automatiquement
+logs/
+*.log

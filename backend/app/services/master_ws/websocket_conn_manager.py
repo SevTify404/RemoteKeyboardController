@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import WebSocket, WebSocketDisconnect
 
-from app import app_loger
+from app import websocket_logger
 from app.services.master_ws.aliases import SideAlias
 from app.services.master_ws.scopes import AvailableWebSocketScopes
 
@@ -24,17 +24,19 @@ class AppWebSocketConnectionManager:
         """Connecte le côté admin via WebSocket"""
         await websocket.accept()
         self._scopes.admin_side = websocket             # On fait une copie par référence pour une utilisation ultérieure
+        websocket_logger.info("✅ Admin panel connecté")
 
     async def connect_client(self, websocket: WebSocket) -> None:
         """Connecte un client via WebSocket"""
         await websocket.accept()
-        self._scopes.client_side = websocket        # On fait une copie par référence pour une utilisation ultérieure
-
+        self._scopes.client_side = websocket
+        websocket_logger.info("✅ Client connecté")
 
     async def connect_waiting_for_connection(self, websocket: WebSocket):
         """Connecte le côté en attente de connexion via WebSocket"""
         await websocket.accept()
         self._scopes.waiting_for_connection_side = websocket
+        websocket_logger.info("✅ Écran d'attente connecté")
 
     @property
     def client_is_connected(self) -> bool:
@@ -53,29 +55,31 @@ class AppWebSocketConnectionManager:
 
     async def close_all_connection(self):
         """Ferme toutes les connexions WebSocket de l'app"""
+        websocket_logger.info("🔌 Fermeture de toutes les connexions WebSocket")
         await self._close_a_connection(SideAlias.ADMIN_SIDE)
         await self._close_a_connection(SideAlias.WAITING_FOR_CONNECTION_SIDE)
         await self._close_a_connection(SideAlias.CLIENT_SIDE)
 
         self._scopes.reset()
+        websocket_logger.debug("✅ Toutes les connexions fermées et état réinitialisé")
 
 
     async def disconnect_admin(self, disconnect_reason: str = None) -> None:
         """Déconnecte le côté admin"""
+        websocket_logger.info(f"🔌 Déconnexion admin: {disconnect_reason or 'Sans raison'}")
         await self._close_a_connection(SideAlias.ADMIN_SIDE, disconnect_reason=disconnect_reason)
-
         self._scopes.remove_admin_connection()
 
     async def disconnect_client(self, disconnect_reason: str = None) -> None:
         """Déconnecte le client"""
+        websocket_logger.info(f"🔌 Déconnexion client: {disconnect_reason or 'Sans raison'}")
         await self._close_a_connection(SideAlias.CLIENT_SIDE, disconnect_reason=disconnect_reason)
-
         self._scopes.remove_user_connection()
 
     async def disconnect_waiting_for_connection(self, disconnect_reason: str = None) -> None:
-        """La D"""
+        """Déconnecte l'écran d'attente"""
+        websocket_logger.info(f"🔌 Déconnexion écran d'attente: {disconnect_reason or 'Sans raison'}")
         await self._close_a_connection(SideAlias.WAITING_FOR_CONNECTION_SIDE, disconnect_reason=disconnect_reason)
-
         self._scopes.remove_waiting_for_connection()
 
     async def send_data_to_admin(self, data: Any, is_json: bool=False) -> None:
@@ -93,8 +97,8 @@ class AppWebSocketConnectionManager:
 
         try:
             return await self._send_data_to_a_websocket(data, target=SideAlias.ADMIN_SIDE, is_json=is_json)
-        except WebSocketDisconnect:      # Fallback, on affiche juste un warning dans le terminal
-            app_loger.warning(f"Panel Admin Inactif, Message perdu : {data}")
+        except WebSocketDisconnect:         # Fallback si l'admin n'est pas connecté on loggue juste un warning avec la data
+            websocket_logger.warning(f"⚠️ Admin panel inactif, message perdu : {data}")
 
     async def send_data_to_client(self, data: Any, is_json: bool=False) -> None:
         """
@@ -197,6 +201,7 @@ class AppWebSocketConnectionManager:
             else:
                 raise ValueError("Data must be str, bytes, or JSON-serializable when is_json is True")
         except WebSocketDisconnect as e:
+            websocket_logger.debug(f"⚠️ Déconnexion détectée lors de l'envoi vers {target}")
             if target == SideAlias.ADMIN_SIDE:
                 self._scopes.remove_admin_connection()
             elif target == SideAlias.CLIENT_SIDE:

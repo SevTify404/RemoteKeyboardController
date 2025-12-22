@@ -5,21 +5,20 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app import app_loger
+from app import app_logger, log_startup_info, log_shutdown_info
 from app.core.config import LOCAL_IP
 from app.utils.security.all_instances import store_manager
 from app.routes.ws_router import router as ws_router
 from app.routes.auth_route import router as auth_router
 
 async def clean_up_task():
-    """Permet de mettoyer les sessions expirés pour eviter de saturer la ram"""
+    """Tâche de fond pour nettoyer les sessions expirées et éviter une saturation RAM"""
     while True:
         try:
-            
             store_manager.cleanup_expired_sessions()
-            app_loger.info(f"Suppressions des sessions exirées")
+            app_logger.debug("Nettoyage des sessions expirées effectué avec succès")
         except Exception as e:
-            app_loger.exception(f"Exception {e.__class__.__name__}: {e}")
+            app_logger.exception(f"Erreur lors du nettoyage des sessions: {e.__class__.__name__}")
             traceback.print_exc()
             
         await asyncio.sleep(3600)
@@ -27,26 +26,30 @@ async def clean_up_task():
 # Lifespan : C'est lui qui va réguler le démarrage et l'extinction de l'app
 @asynccontextmanager
 async def lifespan(_ : FastAPI):
+    # Code qui s'exécutera au démarrage de l'app FastAPI
+    log_startup_info()
+    app_logger.info(f"📍 Serveur accessible sur:")
+    app_logger.info(f"   http://{LOCAL_IP}:8000")
+    app_logger.info(f"   http://localhost:8000")
+    app_logger.info(f"📚 Documentation: http://{LOCAL_IP}:8000/docs")
 
-    print(f"🚀 Server running on:")
-    print(f"   https://{LOCAL_IP}:8000")
-    print(f"   https://localhost:8000")
-    #Code qui s'executera au démarrage de l'app FastApi
+    # Créer la tâche de nettoyage
     asyncio.create_task(clean_up_task())
 
     # On expose l'appplication jusqu'à sa fin
     yield
 
-    #Code qui s'executera au stop de l'app FastApi
+    # Code qui s'exécutera à l'arrêt de l'app FastAPI
+    log_shutdown_info("Arrêt du serveur")
 
 
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ['*'],
+    allow_origins=['*'],
     allow_credentials=True,
-    allow_methods = ['*'],
+    allow_methods=['*'],
     allow_headers=["*"]
 )
 
@@ -55,10 +58,10 @@ app.include_router(auth_router)
 
 @app.get("/", include_in_schema=False)
 async def root():
-  return {"message": "Enjoyyyyyyy"}
+    return {"message": "Enjoyyyyyyy"}
 
-# Utile exclusivement pour debugger en local, ne s'execute pas si on lance le serveur par uvicorn normalement
+# Utile exclusivement pour déboguer en local, ne s'exécute pas si on lance le serveur via uvicorn normalement
 if __name__ == "__main__":
-    conf = uvicorn.Config(app, port=8000, log_level='info', host='0.0.0.0')
+    conf = uvicorn.Config(app, port=8000, log_level='warning', host='0.0.0.0')
     server = uvicorn.Server(conf)
     server.run()

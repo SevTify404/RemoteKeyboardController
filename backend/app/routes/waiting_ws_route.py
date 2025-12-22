@@ -1,5 +1,4 @@
 import asyncio
-import traceback
 
 from fastapi.params import Depends
 
@@ -14,15 +13,13 @@ from app.utils.security.all_instances import (
 from fastapi import WebSocket, WebSocketDisconnect
 
 from ..auth.dependencies import local_only
-from .. import app_loger
+from .. import websocket_logger
 
 
-## schedulers pour rafraichir le changement sur PC
 async def rotation_loop():
   """Tâche de fond pour rafraîchir le QR/PIN toutes les 5 min"""
   while app_websocket_manager.is_waiting_for_connection:
     try:
-      
       challenge = challenge_manager.create_challenge()
       pin = pin_manager.create_pin(challenge.challenge_id)
 
@@ -42,29 +39,30 @@ async def rotation_loop():
         is_json=True
       )
       
+      websocket_logger.debug(f"✅ Nouveau challenge généré et envoyé")
+
     except Exception as e:
-      app_loger.exception(f"Une Exception s'est produite : {e.__class__.__name__}: {e}")
-      traceback.print_exc()
+      websocket_logger.exception(f"❌ Erreur lors de la génération du challenge: {e.__class__.__name__}: {e}")
 
     await asyncio.sleep(300)
 
-@router.websocket(
-  "/waiting",
-    dependencies=[Depends(local_only)]
-)
+@router.websocket("/waiting", dependencies=[Depends(local_only)])
 async def waiting_connexion(websocket: WebSocket):
-  
-  await app_websocket_manager.connect_waiting_for_connection(websocket)
+  """WebSocket pour les connexions en attente d'authentification (local uniquement)"""
 
-  ## creation de la tache asynchrone
+  await app_websocket_manager.connect_waiting_for_connection(websocket)
+  websocket_logger.info("✅ Connexion d'attente établie (waiting)")
+
+  # Création de la tâche asynchrone de rafraîchissement
   refresh_task = asyncio.create_task(rotation_loop())
+  websocket_logger.debug("🔄 Boucle de rafraîchissement des challenges démarrée")
 
   try: 
-    
     while True:
-      
       await websocket.receive_json()
       
   except WebSocketDisconnect:
+    websocket_logger.info("🔌 Connexion d'attente fermée")
     await app_websocket_manager.disconnect_waiting_for_connection("La connexion n'a pu etre établie")
     refresh_task.cancel()
+    websocket_logger.debug("🛑 Boucle de rafraîchissement arrêtée")
