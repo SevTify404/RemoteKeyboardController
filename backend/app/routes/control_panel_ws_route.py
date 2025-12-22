@@ -23,7 +23,7 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
 
     session = store_manager.get_device_token(device_token)
     if not session or session.revoked:
-        await websocket.close(code=1008)
+        await websocket.close(code=1008, reason='Bad device token')
         return
 
     await app_websocket_manager.connect_client(websocket)
