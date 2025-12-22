@@ -1,10 +1,12 @@
 from asyncio import Lock
 from typing import Optional
+
 from pynput.keyboard import Controller
+
+from app import keyboard_logger
 from app.services.keyboard_controller import exceptions
 from app.services.keyboard_controller._custom_touchs import KeyboardTouchs
 from app.services.keyboard_controller.availables import AvailableKeys, key_map
-from app import keyboard_logger
 
 
 class CustomKeyboardController:

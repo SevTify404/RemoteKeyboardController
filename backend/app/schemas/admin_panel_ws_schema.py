@@ -1,7 +1,8 @@
-from typing import Any, Self, Union, Optional
-from pydantic import BaseModel, model_validator
-from uuid import UUID
 from datetime import datetime
+from typing import Any, Self, Union, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, model_validator
 
 from app.routes import WssTypeMessage
 from app.schemas.control_panel_ws_schema import OutControlPanelWSMessage

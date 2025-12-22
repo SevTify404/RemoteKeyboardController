@@ -1,5 +1,6 @@
-from typing import Dict, Optional
 from datetime import UTC, datetime
+from typing import Dict, Optional
+
 from app.schemas.security_schema import DeviceTokenSchema, SessionTokenSchema
 
 

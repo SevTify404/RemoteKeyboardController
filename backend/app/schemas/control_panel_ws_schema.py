@@ -1,7 +1,8 @@
 
-from pydantic import BaseModel, Field
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 from app.services.keyboard_controller.availables import AvailableKeys
 

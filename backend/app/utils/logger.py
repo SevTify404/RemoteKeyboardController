@@ -8,11 +8,10 @@ Ce module met en place un système de logging centralizado et optimisé :
 - Filtrage intelligent du terminal
 """
 
-import os
 import logging
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from datetime import datetime
 
 # Créer le répertoire des logs s'il n'existe pas
 LOG_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
@@ -140,18 +139,9 @@ def get_logger(name: str) -> logging.Logger:
 
 def log_startup_info():
     """Log les informations de démarrage de l'application."""
-    app_logger.info("=" * 80)
-    app_logger.info("🚀 RemoteKeyboardController Backend - DÉMARRAGE")
-    app_logger.info("=" * 80)
-    app_logger.info(f"Répertoire de logs: {LOG_DIR}")
-    app_logger.info(f"Heure de démarrage: {datetime.now().strftime(DATE_FORMAT)}")
-    app_logger.info("Logs détaillés disponibles dans les fichiers:")
-    app_logger.info(f"  - {MAIN_LOG_FILE}")
-    app_logger.info(f"  - {ERROR_LOG_FILE}")
-    app_logger.info(f"  - {AUTH_LOG_FILE}")
-    app_logger.info(f"  - {WEBSOCKET_LOG_FILE}")
-    app_logger.info(f"  - {KEYBOARD_LOG_FILE}")
-    app_logger.info("=" * 80)
+    print("=" * 80)
+    print("🚀 RemoteKeyboardController Backend - DÉMARRAGE")
+    print("=" * 80)
 
 
 def log_shutdown_info(reason: str = "Arrêt normal"):

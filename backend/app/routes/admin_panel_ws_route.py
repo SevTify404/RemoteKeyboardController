@@ -3,8 +3,8 @@ from fastapi.params import Depends
 
 from app.auth.dependencies import local_only
 from app.routes.ws_router import router
-from app.services import app_websocket_manager
 from app.schemas.admin_panel_ws_schema import WsPayloadMessage
+from app.services import app_websocket_manager
 
 
 @router.websocket("/panel", dependencies=[Depends(local_only)])

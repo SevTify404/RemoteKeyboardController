@@ -5,11 +5,13 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app import app_logger, log_startup_info, log_shutdown_info
 from app.core.config import LOCAL_IP
-from app.utils.security.all_instances import store_manager
-from app.routes.ws_router import router as ws_router
 from app.routes.auth_route import router as auth_router
+from app.routes.ws_router import router as ws_router
+from app.utils.security.all_instances import store_manager
+
 
 async def clean_up_task():
     """Tâche de fond pour nettoyer les sessions expirées et éviter une saturation RAM"""
@@ -28,10 +30,10 @@ async def clean_up_task():
 async def lifespan(_ : FastAPI):
     # Code qui s'exécutera au démarrage de l'app FastAPI
     log_startup_info()
-    app_logger.info(f"📍 Serveur accessible sur:")
-    app_logger.info(f"   http://{LOCAL_IP}:8000")
-    app_logger.info(f"   http://localhost:8000")
-    app_logger.info(f"📚 Documentation: http://{LOCAL_IP}:8000/docs")
+    print(f"📍 Serveur accessible sur:")
+    print(f"   http://{LOCAL_IP}:8000")
+    print(f"   http://localhost:8000")
+    print(f"📚 Documentation: http://{LOCAL_IP}:8000/docs")
 
     # Créer la tâche de nettoyage
     asyncio.create_task(clean_up_task())

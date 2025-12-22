@@ -1,18 +1,16 @@
 import asyncio
 from typing import Annotated
 
+from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.params import Query
 from pydantic import ValidationError
 
-from app import websocket_logger, keyboard_logger
+from app import websocket_logger
 from app.routes import WssTypeMessage
 from app.routes.ws_router import router
 from app.schemas.admin_panel_ws_schema import WsPayloadMessage, Notification
-
-from app.services import app_websocket_manager, app_keyboard_controller
 from app.schemas.control_panel_ws_schema import ControlPanelWSMessage, AvailableMessageTypes, OutControlPanelWSMessage
-from fastapi import WebSocket, WebSocketDisconnect
-
+from app.services import app_websocket_manager, app_keyboard_controller
 from app.services.keyboard_controller.exceptions import ControllerAlreadyRunningException
 from app.utils.security.all_instances import store_manager
 
@@ -58,7 +56,7 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
                 data = ControlPanelWSMessage.model_validate_json(raw_data)
                 websocket_logger.debug(f"📥 Message reçu: {data.message_type}")
 
-            except ValidationError as e:
+            except ValidationError:
                 has_succeed = False
                 error_msg = "Données de commandes reçu mais mal formatés, Impossible de traiter"
                 websocket_logger.warning(f"❌ Erreur de validation JSON: {error_msg}")

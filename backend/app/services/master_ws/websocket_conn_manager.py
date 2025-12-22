@@ -1,4 +1,5 @@
 from typing import Any
+
 from fastapi import WebSocket, WebSocketDisconnect
 
 from app import websocket_logger

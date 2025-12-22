@@ -1,8 +1,9 @@
+from abc import ABC, abstractmethod
+from asyncio import sleep
 from dataclasses import dataclass
 from typing import Union
-from asyncio import sleep
+
 from pynput.keyboard import Controller, KeyCode, Key
-from abc import ABC, abstractmethod
 
 KeyType = Union[KeyCode, Key]
 

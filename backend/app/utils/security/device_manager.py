@@ -1,9 +1,8 @@
 import secrets
-from app.schemas.security_schema import DeviceTokenSchema, SessionTokenSchema
+from datetime import datetime, timedelta
 from uuid import uuid4, UUID
 
-from datetime import datetime, timedelta
-
+from app.schemas.security_schema import DeviceTokenSchema, SessionTokenSchema
 from app.utils.security.token_storage import DeviceStore
 
 

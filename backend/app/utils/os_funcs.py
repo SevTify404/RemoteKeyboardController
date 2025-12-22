@@ -1,6 +1,6 @@
-from platform import system
 import socket
 from enum import Enum
+from platform import system
 
 
 class OperatingSystem(str, Enum):

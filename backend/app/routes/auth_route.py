@@ -1,16 +1,16 @@
-import logging
-import traceback
-from fastapi import APIRouter
-from . import ApiTags, ErrorMessages, WssTypeMessage
 from typing import Union
-from app.schemas.base_schema import ApiBaseResponse
-from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest
-from app.services import app_websocket_manager
-from app.schemas.admin_panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
-from app.utils.security.all_instances import (
-  pin_manager, challenge_manager, device_manager
-)
+
+from fastapi import APIRouter
+
 from app import auth_logger
+from app.schemas.admin_panel_ws_schema import WsPayloadMessage, AuthSuccessPayload
+from app.schemas.auth_schema import VerifyAuthResponse, VerifyAuthRequest
+from app.schemas.base_schema import ApiBaseResponse
+from app.services import app_websocket_manager
+from app.utils.security.all_instances import (
+    pin_manager, challenge_manager, device_manager
+)
+from . import ApiTags, ErrorMessages, WssTypeMessage
 
 router = APIRouter(prefix="/auth", tags=[ApiTags.AUTHENTIFICATION])
 

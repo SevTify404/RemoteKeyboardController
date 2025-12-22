@@ -1,10 +1,9 @@
-from datetime import datetime, timedelta
-import secrets
 import hmac
-from uuid import uuid4
-
+import secrets
+from datetime import datetime, timedelta
 from typing import Union
 from uuid import UUID
+from uuid import uuid4
 
 from app.schemas.security_schema import PinSchema
 
