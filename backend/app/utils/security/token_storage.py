@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 from datetime import UTC, datetime
 from app.schemas.security_schema import DeviceTokenSchema, SessionTokenSchema
+from uuid import UUID
 
 
 class DeviceStore:
@@ -14,7 +15,7 @@ class DeviceStore:
 
 
     def save_device_token(self, token: DeviceTokenSchema) -> None:
-        self._device_tokens[token.token] = token
+        self._device_tokens[token.device_id] = token
 
     def get_device_token(self, token: str) -> Optional[DeviceTokenSchema]:
         return self._device_tokens.get(token)
@@ -26,16 +27,16 @@ class DeviceStore:
 
 
     def save_session_token(self, token: SessionTokenSchema) -> None:
-        self._session_tokens[token.token] = token
+        self._session_tokens[token.device_id] = token
 
-    def get_session_token(self, token: str) -> Optional[SessionTokenSchema]:
-        session = self._session_tokens.get(token)
+    def get_session_token(self, device_id: UUID) -> Optional[SessionTokenSchema]:
+        session = self._session_tokens.get(device_id)
 
         if not session:
             return None
 
-        if session.expires_at < datetime.now():
-            del self._session_tokens[token]
+        if session.expires_at < datetime.now(UTC):
+            del self._session_tokens[device_id]
             return None
 
         if not session.active:
