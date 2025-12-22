@@ -78,7 +78,7 @@ class WsPayloadMessage(BaseModel):
     match avec la data egalement envoyer. ce decorateur s'execute automatiquement a 
     chaque instance de cette classe"""
 
-    if self.is_related_to_authentification() and not isinstance(self.data, ChallengePayload):
+    if self.is_related_to_authentification() and not isinstance(self.data, (ChallengePayload, AuthSuccessPayload)):
       raise ValueError(f"{WssTypeMessage.CHALLENGE_CREATED} doit etre une correspondre a ChallengePayload")
 
     if self.is_related_to_pptCommand() and not isinstance(self.data, OutControlPanelWSMessage):

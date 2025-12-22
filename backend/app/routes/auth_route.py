@@ -10,9 +10,10 @@ from app.schemas.admin_panel_ws_schema import WsPayloadMessage, AuthSuccessPaylo
 from app.utils.security.all_instances import (
   pin_manager, challenge_manager, device_manager
 )
-from ..main import app_loger
 
 router = APIRouter(prefix="/auth", tags=[ApiTags.AUTHENTIFICATION])
+
+from .. import app_loger
 
 
 # @router.get(
@@ -64,8 +65,8 @@ async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[Ve
     elif chall_data.pin: 
       
       if not pin_manager.is_valid_pin(chall_data.pin):
-        return ApiBaseResponse.success_response(
-          f"{ErrorMessages.INVALID_PIN} or {ErrorMessages.BLOCKED_PIN} or {ErrorMessages.UNFOUND_PIN}"
+        return ApiBaseResponse.error_response(
+          f"{ErrorMessages.INVALID_PIN.value} or {ErrorMessages.BLOCKED_PIN.value} or {ErrorMessages.UNFOUND_PIN.value}"
         )
         
       pin_obj = pin_manager.get_pin(chall_data.pin)
@@ -106,8 +107,10 @@ async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[Ve
       data=success_message.model_dump(mode="json"),
       is_json=True
     )
+
+    await app_websocket_manager.disconnect_waiting_for_connection()
     
-    return ApiBaseResponse.success_response(succes_data)
+    return ApiBaseResponse.success_response(data)
   
   except Exception as e:
     app_loger.exception(f"Exception {e.__class__.__name__}: {e}")

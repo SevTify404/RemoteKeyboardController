@@ -1,10 +1,13 @@
 from fastapi import WebSocket, WebSocketDisconnect
+from fastapi.params import Depends
+
+from app.auth.dependencies import local_only
 from app.routes.ws_router import router
 from app.services import app_websocket_manager
 from app.schemas.admin_panel_ws_schema import WsPayloadMessage
 
 
-@router.websocket("/panel")
+@router.websocket("/panel", dependencies=[Depends(local_only)])
 async def panel_websocket(websocket: WebSocket):
   
   await app_websocket_manager.connect_admin(websocket)

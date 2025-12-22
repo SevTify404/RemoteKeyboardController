@@ -16,8 +16,8 @@ class VerifyAuthRequest(BaseModel):
     """Schema pour verifier les infos lors du scan qrcode/saisie pin
     ici le PIN/challenge_id est optionnel si on veut s'authentifier par qrcode/PIN"""
 
-    challenge_id: Optional[UUID]
-    pin: Optional[str]
+    challenge_id: Optional[UUID] = None
+    pin: Optional[str] = None
     
     
 class VerifyAuthResponse(BaseModel):

@@ -1,5 +1,8 @@
 import asyncio
 import traceback
+
+from fastapi.params import Depends
+
 from app.routes import WssTypeMessage
 from app.schemas.admin_panel_ws_schema import ChallengePayload, WsPayloadMessage
 from .ws_router import router
@@ -10,7 +13,8 @@ from app.utils.security.all_instances import (
 
 from fastapi import WebSocket, WebSocketDisconnect
 
-from ..main import app_loger
+from ..auth.dependencies import local_only
+from .. import app_loger
 
 
 ## schedulers pour rafraichir le changement sur PC
@@ -44,9 +48,9 @@ async def rotation_loop():
 
     await asyncio.sleep(300)
 
-
 @router.websocket(
-  "/waiting"
+  "/waiting",
+    dependencies=[Depends(local_only)]
 )
 async def waiting_connexion(websocket: WebSocket):
   

@@ -4,7 +4,8 @@ from pynput.keyboard import Controller
 from app.services.keyboard_controller import exceptions
 from app.services.keyboard_controller._custom_touchs import KeyboardTouchs
 from app.services.keyboard_controller.availables import AvailableKeys, key_map
-from app.main import app_loger
+from app import app_loger
+
 
 class CustomKeyboardController:
     """Classe singleton personnalisé pour controler le clavier par rapport à l'app dans son ensemble."""

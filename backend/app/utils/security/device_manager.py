@@ -20,7 +20,8 @@ class DeviceTokenManager:
     dev_token = DeviceTokenSchema(
       device_id=uuid4(),
       token=secrets.token_urlsafe(32),
-      created_at=datetime.now()
+      created_at=datetime.now(),
+      expires_at=datetime.now() + self._ttl_minutes,
     )
 
 

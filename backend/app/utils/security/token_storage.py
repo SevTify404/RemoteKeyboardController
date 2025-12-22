@@ -34,7 +34,7 @@ class DeviceStore:
         if not session:
             return None
 
-        if session.expires_at < datetime.now(UTC):
+        if session.expires_at < datetime.now():
             del self._session_tokens[token]
             return None
 

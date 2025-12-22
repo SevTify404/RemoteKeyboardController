@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import WebSocket, WebSocketDisconnect
 
-from app.main import app_loger
+from app import app_loger
 from app.services.master_ws.aliases import SideAlias
 from app.services.master_ws.scopes import AvailableWebSocketScopes
 from app.schemas.admin_panel_ws_schema import WsPayloadMessage
@@ -230,5 +230,5 @@ class AppWebSocketConnectionManager:
 
         try:
             return await websocket.close(reason=disconnect_reason)
-        except WebSocketDisconnect:
+        except (WebSocketDisconnect, RuntimeError):
             pass
