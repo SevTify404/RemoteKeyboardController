@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi.params import Query
 from pydantic import ValidationError
 
+from app import app_loger
 from app.routes import WssTypeMessage
 from app.routes.ws_router import router
 from app.schemas.admin_panel_ws_schema import WsPayloadMessage, Notification
@@ -93,12 +94,12 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
                         data=data if has_succeed else None,
                         error=error_msg
                     )
-                ).model_dump()
+                ).model_dump_json()
+
             tasks = [
-                websocket.send_json(msg),
+                websocket.send_text(msg),       # Plus besoin de is_json=True ou send_json vu qu'on dump en json directement
                 app_websocket_manager.send_data_to_admin(
-                    data=msg,
-                    is_json=True
+                    data=msg
                 )
             ]
             await asyncio.gather(*tasks)
@@ -109,6 +110,18 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
             data=WsPayloadMessage(
                 type=WssTypeMessage.NOTIFY,
                 data=Notification(message="Le client s'est déconnecté")
+            ).model_dump(),
+            is_json=True
+        )
+    except Exception as e:
+        await app_websocket_manager.disconnect_client()
+        await app_keyboard_controller.stop_controller()
+        msg = f"Une erreur est survenue dans le control panel client: {e.__class__.__name__}: {e}"
+        app_loger.exception(msg)
+        await app_websocket_manager.send_data_to_admin(
+            data=WsPayloadMessage(
+                type=WssTypeMessage.NOTIFY,
+                data=Notification(message=msg)
             ).model_dump(),
             is_json=True
         )

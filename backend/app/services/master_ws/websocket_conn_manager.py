@@ -4,7 +4,6 @@ from fastapi import WebSocket, WebSocketDisconnect
 from app import app_loger
 from app.services.master_ws.aliases import SideAlias
 from app.services.master_ws.scopes import AvailableWebSocketScopes
-from app.schemas.admin_panel_ws_schema import WsPayloadMessage
 
 
 class AppWebSocketConnectionManager:
@@ -91,12 +90,6 @@ class AppWebSocketConnectionManager:
         Raises:
             WebSocketException: Si l'admin n'est pas/plus connecté
         """
-        
-        message = WsPayloadMessage(**data)
-
-        if message.is_related_to_authentification():
-            app_loger.warn("Action refusé: Pas d'authentification sur le panel admin")
-            return None
 
         try:
             return await self._send_data_to_a_websocket(data, target=SideAlias.ADMIN_SIDE, is_json=is_json)
@@ -128,12 +121,6 @@ class AppWebSocketConnectionManager:
         Raises:
             WebSocketDisconnect: Si le côté 'waiting' n'est pas/plus connecté.
         """
-        
-        message = WsPayloadMessage(**data)
-
-        if message.is_related_to_pptCommand():
-            app_loger.warning("Action refsué: Aucune connexion établie")
-            return
 
         await self._send_data_to_a_websocket(data, target=SideAlias.WAITING_FOR_CONNECTION_SIDE, is_json=is_json)
 
@@ -203,10 +190,12 @@ class AppWebSocketConnectionManager:
         try:
             if is_json:
                 await websocket.send_json(data)
+            elif isinstance(data, str):
+                await websocket.send_text(data)
             elif isinstance(data, bytes):
                 await websocket.send_bytes(data)
             else:
-                await websocket.send_text(data)
+                raise ValueError("Data must be str, bytes, or JSON-serializable when is_json is True")
         except WebSocketDisconnect as e:
             if target == SideAlias.ADMIN_SIDE:
                 self._scopes.remove_admin_connection()
