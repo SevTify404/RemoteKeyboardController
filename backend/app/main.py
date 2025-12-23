@@ -64,6 +64,6 @@ async def root():
 
 # Utile exclusivement pour déboguer en local, ne s'exécute pas si on lance le serveur via uvicorn normalement
 if __name__ == "__main__":
-    conf = uvicorn.Config(app, port=8000, log_level='warning', host='0.0.0.0')
+    conf = uvicorn.Config(app, port=8000, log_level='info', host='0.0.0.0')
     server = uvicorn.Server(conf)
     server.run()
