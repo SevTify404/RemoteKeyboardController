@@ -22,12 +22,13 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
     # Vérification du device_token
     session = store_manager.get_device_token(device_token)
     if not session or session.revoked:
-        websocket_logger.warning(f"❌ Tentative de connexion avec un token invalide")
+        websocket_logger.warning("❌ Tentative de connexion avec un token invalide")
         await websocket.close(code=1008, reason='Bad device token')
         return
 
     await app_websocket_manager.connect_client(websocket)
-    websocket_logger.info(f"✅ Client connecté au WebSocket control-panel")
+    session.revoke_device_token_session()
+    websocket_logger.info("✅ Client connecté au WebSocket control-panel")
 
     try:
         await app_keyboard_controller.start_controller('Client Control Panel')
@@ -98,7 +99,6 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
                 # Pas encore implémenté
                 elif data.message_type == AvailableMessageTypes.STATUS_UPDATE:
                     websocket_logger.debug("ℹ️ Status update reçu (non implémenté)")
-                    pass
 
             msg = WsPayloadMessage(
                     type=WssTypeMessage.COMMAND,

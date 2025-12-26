@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.utils.security.token_storage import get
+
 
 class ChallengeSchema(BaseModel):
   """schema pour valider les données d'un challenge"""
@@ -35,6 +37,10 @@ class DeviceTokenSchema(BaseModel):
   created_at: datetime
   expires_at: Optional[datetime]
   revoked: bool = False ## indique une expiration si true
+
+  def revoke_device_token_session(self):
+    self.revoked = True
+    
   
   
 class SessionTokenSchema(BaseModel):

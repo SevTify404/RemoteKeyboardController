@@ -38,22 +38,22 @@ async def verify_auth(chall_data: VerifyAuthRequest) -> ApiBaseResponse[Union[Ve
       auth_logger.info(f"✅ Challenge validé et marqué comme utilisé: {chall_data.challenge_id}")
 
     elif chall_data.pin: 
-      auth_logger.debug(f"Vérification par PIN (masqué pour sécurité)")
+      auth_logger.debug("Vérification par PIN (masqué pour sécurité)")
 
       if not pin_manager.is_valid_pin(chall_data.pin):
         error_msg = f"{ErrorMessages.INVALID_PIN.value} or {ErrorMessages.BLOCKED_PIN.value} or {ErrorMessages.UNFOUND_PIN.value}"
-        auth_logger.warning(f"Tentative de PIN invalide")
+        auth_logger.warning("Tentative de PIN invalide")
         return ApiBaseResponse.error_response(error_msg)
 
       pin_obj = pin_manager.get_pin(chall_data.pin)
         
       if not challenge_manager.is_valid(pin_obj.challenge_id):
         error_msg = f"{ErrorMessages.CHALLENGE_TIME_OUT} or {ErrorMessages.CHALLENGE_USED}"
-        auth_logger.warning(f"Challenge associé au PIN invalide")
+        auth_logger.warning("Challenge associé au PIN invalide")
         return ApiBaseResponse.success_response(error_msg)
 
       pin_manager.mark_pin_as_used(pin_obj.pin_code)
-      auth_logger.info(f"✅ PIN validé et marqué comme utilisé")
+      auth_logger.info("✅ PIN validé et marqué comme utilisé")
 
     else:
       auth_logger.warning("Tentative de vérification sans Challenge ID ni PIN")

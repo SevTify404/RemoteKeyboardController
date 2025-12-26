@@ -37,7 +37,7 @@ async def rotation_loop():
         is_json=True
       )
       
-      websocket_logger.debug(f"✅ Nouveau challenge généré et envoyé")
+      websocket_logger.debug("✅ Nouveau challenge généré et envoyé")
 
     except Exception as e:
       websocket_logger.exception(f"❌ Erreur lors de la génération du challenge: {e.__class__.__name__}: {e}")
