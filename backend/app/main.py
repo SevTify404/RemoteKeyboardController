@@ -1,5 +1,8 @@
-import uvloop
-uvloop.install()  # Nouvelle event loop optimisé à mort
+try:
+    import uvloop
+    uvloop.install()  # Nouvelle event loop optimisé à mort
+except Exception as exc:
+    print(f"Erreur lors de l'installation d'uvloop: {exc.__class__.__name__}\nFallBack à la boucle standard.")
 
 import asyncio
 import traceback
@@ -67,6 +70,6 @@ async def root():
 
 # Utile exclusivement pour déboguer en local, ne s'exécute pas si on lance le serveur via uvicorn normalement
 if __name__ == "__main__":
-    conf = uvicorn.Config(app, port=8000, log_level='info', host='0.0.0.0', loop='uvloop')
+    conf = uvicorn.Config(app, port=8000, log_level='info', host='0.0.0.0')
     server = uvicorn.Server(conf)
     server.run()
