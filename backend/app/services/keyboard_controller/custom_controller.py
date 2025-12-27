@@ -27,7 +27,7 @@ class CustomKeyboardController:
         """Retourne le nom du client actuellement connecté."""
         return self._current_client_alias
 
-    async def _verify_controller_running(self) -> Controller:
+    def _verify_controller_running(self) -> Controller:
         """Vérifie que le contrôleur est actif et retourne l'instance."""
         if not self._is_a_controller_running or self._active_controller is None:
             raise exceptions.NoActiveControllerException("Aucun contrôleur actif pour presser une touche")
@@ -87,7 +87,7 @@ class CustomKeyboardController:
         """
 
         async with self._state_lock:
-            controller = await self._verify_controller_running()
+            controller = self._verify_controller_running()
 
             if key_name not in self._keys:
                 raise exceptions.TouchNotExistException(f"La touche '{key_name}' n'existe pas dans les touches définies.")
@@ -108,7 +108,7 @@ class CustomKeyboardController:
             NoActiveControllerException: Si aucun contrôleur n'est actif.
         """
         async with self._state_lock:
-            controller = await self._verify_controller_running()
+            controller = self._verify_controller_running()
             client_alias = self._current_client_alias
 
         try:

@@ -1,3 +1,6 @@
+import uvloop
+uvloop.install()  # Nouvelle event loop optimisé à mort
+
 import asyncio
 import traceback
 from contextlib import asynccontextmanager
@@ -30,9 +33,10 @@ async def clean_up_task():
 async def lifespan(_ : FastAPI):
     # Code qui s'exécutera au démarrage de l'app FastAPI
     log_startup_info()
-    print(f"📍 Serveur accessible sur:")
-    print(f"   http://{LOCAL_IP}:8000")
-    print(f"   http://localhost:8000")
+    print(asyncio.get_event_loop_policy())
+    print("📍 Serveur accessible sur:")
+    print("   http://{LOCAL_IP}:8000")
+    print("   http://localhost:8000")
     print(f"📚 Documentation: http://{LOCAL_IP}:8000/docs")
 
     # Créer la tâche de nettoyage
@@ -64,6 +68,6 @@ async def root():
 
 # Utile exclusivement pour déboguer en local, ne s'exécute pas si on lance le serveur via uvicorn normalement
 if __name__ == "__main__":
-    conf = uvicorn.Config(app, port=8000, log_level='info', host='0.0.0.0')
+    conf = uvicorn.Config(app, port=8000, log_level='info', host='0.0.0.0', loop='uvloop')
     server = uvicorn.Server(conf)
     server.run()
