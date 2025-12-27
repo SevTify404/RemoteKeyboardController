@@ -33,7 +33,6 @@ async def clean_up_task():
 async def lifespan(_ : FastAPI):
     # Code qui s'exécutera au démarrage de l'app FastAPI
     log_startup_info()
-    print(asyncio.get_event_loop_policy())
     print("📍 Serveur accessible sur:")
     print("   http://{LOCAL_IP}:8000")
     print("   http://localhost:8000")
