@@ -1,0 +1,8 @@
+pydantic
+fastapi[standard]
+python-jose
+uvicorn[standard]
+python-dotenv
+argon2-cffi
+pynput
+websockets
