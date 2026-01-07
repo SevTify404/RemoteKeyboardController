@@ -37,7 +37,7 @@ async def lifespan(_ : FastAPI):
     # Code qui s'exécutera au démarrage de l'app FastAPI
     log_startup_info()
     print("📍 Serveur accessible sur:")
-    print("   http://{LOCAL_IP}:8000")
+    print(f"   http://{LOCAL_IP}:8000")
     print("   http://localhost:8000")
     print(f"📚 Documentation: http://{LOCAL_IP}:8000/docs")
 
