@@ -37,6 +37,44 @@ async def _final_notifier(
     await asyncio.gather(*tasks)
 
 
+async def _execute_command(
+    data: ControlPanelWSMessage,
+    has_succeed: bool,
+    error_msg: str | None = None
+) -> tuple[bool, str]:
+    """Fonction interne pour exécuter une commande reçue"""
+    if data.payload.command is None:
+        websocket_logger.warning(f"❌ {error_msg}")
+        return False, "Commande vide ou mal formatée"
+
+    else:
+        try:
+            await app_keyboard_controller.press_key(data.payload.command)
+            websocket_logger.debug(f"⌨️ Commande exécutée: {data.payload.command}")
+            return has_succeed, error_msg
+        except Exception as e:
+            websocket_logger.error(f"❌ Erreur lors de l'exécution de la commande: {error_msg}")
+
+            return has_succeed, str(e)
+
+async def _type_string(
+    data: ControlPanelWSMessage,
+    has_succeed: bool,
+    error_msg: str | None = None
+) -> tuple[bool, str]:
+    """Fonction interne pour taper une chaîne de caractères"""
+    if not data.payload or data.payload.text_to_type is None:
+        websocket_logger.warning(f"❌ {error_msg}")
+        return False, "Texte vide ou mal formaté"
+    else:
+        try:
+            await app_keyboard_controller.type_a_string(data.payload.text_to_type)
+            websocket_logger.debug(f"📝 Texte tapé: {len(data.payload.text_to_type)} caractères")
+            return has_succeed, error_msg
+        except Exception as e:
+            websocket_logger.error(f"❌ Erreur lors de la saisie: {error_msg}")
+            return has_succeed, str(e)
+
 @router.websocket("/control-panel")
 async def control_panel_websocket(websocket: WebSocket, device_token = Annotated[str, Query(...)]):
     """WebSocket route pour le contrôle panel côté client"""
@@ -82,33 +120,12 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
 
             has_succeed = True
             error_msg = None
+
             if data.message_type == AvailableMessageTypes.COMMAND:
-                if data.payload.command is None:
-                    has_succeed = False
-                    error_msg = "Commande vide ou mal formatée"
-                    websocket_logger.warning(f"❌ {error_msg}")
-                else:
-                    try:
-                        await app_keyboard_controller.press_key(data.payload.command)
-                        websocket_logger.debug(f"⌨️ Commande exécutée: {data.payload.command}")
-                    except Exception as e:
-                        has_succeed = False
-                        error_msg = str(e)
-                        websocket_logger.error(f"❌ Erreur lors de l'exécution de la commande: {error_msg}")
+                has_succeed, error_msg = await _execute_command(data, has_succeed, error_msg)
 
             elif data.message_type == AvailableMessageTypes.TYPING:
-                if not data.payload or data.payload.text_to_type is None:
-                    has_succeed = False
-                    error_msg = "Texte vide ou mal formaté"
-                    websocket_logger.warning(f"❌ {error_msg}")
-                else:
-                    try:
-                        await app_keyboard_controller.type_a_string(data.payload.text_to_type)
-                        websocket_logger.debug(f"📝 Texte tapé: {len(data.payload.text_to_type)} caractères")
-                    except Exception as e:
-                        has_succeed = False
-                        error_msg = str(e)
-                        websocket_logger.error(f"❌ Erreur lors de la saisie: {error_msg}")
+                has_succeed, error_msg = await _type_string(data, has_succeed, error_msg)
 
             elif data.message_type == AvailableMessageTypes.DISCONNECT:
                 websocket_logger.info("🔌 Déconnexion demandée par le client")
@@ -117,6 +134,7 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
             # Pas encore implémenté
             elif data.message_type == AvailableMessageTypes.STATUS_UPDATE:
                 websocket_logger.debug("ℹ️ Status update reçu (non implémenté)")
+                continue
 
             #Tache de fond pour optimiser le temps de libération de la boucle
             asyncio.create_task(_final_notifier(data, has_succeed, error_msg))
