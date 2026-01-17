@@ -107,8 +107,7 @@ async def control_panel_websocket(websocket: WebSocket, device_token = Annotated
 
     try:
         while True:
-            raw_data = await websocket.receive_bytes()
-
+            raw_data = await websocket.receive_text()
             try:
                 data = ControlPanelWSMessage.model_validate_json(raw_data)
                 websocket_logger.debug(f"📥 Message reçu: {data.message_type}")
