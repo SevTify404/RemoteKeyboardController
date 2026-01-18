@@ -3,7 +3,6 @@ from fastapi.params import Depends
 
 from app.auth.dependencies import local_only
 from app.routes.ws_router import router
-from app.schemas.admin_panel_ws_schema import WsPayloadMessage
 from app.services import app_websocket_manager
 
 
@@ -14,11 +13,9 @@ async def panel_websocket(websocket: WebSocket):
 
   try:
     while True:
-      
-      msg: WsPayloadMessage = await websocket.receive_json()
-
-      if msg.is_related_to_pptCommand():
-        app_websocket_manager.send_data_to_client(f"L'admin a traité l'action: {msg.command_action}")
+      # On fait rien pour le moment, juste garder la connexion ouverte
+      await websocket.receive()
+      continue
       
       
   except WebSocketDisconnect:

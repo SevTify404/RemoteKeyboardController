@@ -6,3 +6,4 @@ python-dotenv
 argon2-cffi
 pynput
 websockets
+uvloop

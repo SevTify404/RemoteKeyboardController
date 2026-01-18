@@ -1,3 +1,9 @@
+try:
+    import uvloop
+    uvloop.install()  # Nouvelle event loop optimisé à mort
+except Exception as exc:
+    print(f"Erreur lors de l'installation d'uvloop: {exc.__class__.__name__}\nFallBack à la boucle standard.")
+
 import asyncio
 import traceback
 from contextlib import asynccontextmanager
@@ -30,9 +36,9 @@ async def clean_up_task():
 async def lifespan(_ : FastAPI):
     # Code qui s'exécutera au démarrage de l'app FastAPI
     log_startup_info()
-    print(f"📍 Serveur accessible sur:")
+    print("📍 Serveur accessible sur:")
     print(f"   http://{LOCAL_IP}:8000")
-    print(f"   http://localhost:8000")
+    print("   http://localhost:8000")
     print(f"📚 Documentation: http://{LOCAL_IP}:8000/docs")
 
     # Créer la tâche de nettoyage

@@ -92,8 +92,6 @@ class AppWebSocketConnectionManager:
 
         Returns:
             None
-        Raises:
-            WebSocketException: Si l'admin n'est pas/plus connecté
         """
 
         try:

@@ -4,9 +4,6 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.utils.security.token_storage import get
-
-
 class ChallengeSchema(BaseModel):
   """schema pour valider les données d'un challenge"""
 
