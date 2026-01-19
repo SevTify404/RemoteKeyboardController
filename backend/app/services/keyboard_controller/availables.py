@@ -36,6 +36,9 @@ class KeysImplementations:
     MUTE_KEY = SingleKeyTouch(Key.media_volume_mute)
     VOLUME_UP_KEY = SingleKeyTouch(Key.media_volume_up)
     VOLUME_DOWN_KEY = SingleKeyTouch(Key.media_volume_down)
+    START_PRESENTATION = SingleKeyTouch(Key.f5)
+    END_PRESENTATION = SingleKeyTouch(Key.esc)
+    ECHAP = SingleKeyTouch(Key.esc)
 
     #Les combos
     COPY = KeyboardCombinationTouch(
@@ -66,20 +69,6 @@ class KeysImplementations:
         )
     )
 
-    START_PRESENTATION = KeyboardCombinationTouch(
-        KeyboardCombination(
-            keys_to_hold=[Key.f5],
-            keys_to_press=[]
-        )
-    )
-
-    END_PRESENTATION = KeyboardCombinationTouch(
-        KeyboardCombination(
-            keys_to_hold=[Key.esc],
-            keys_to_press=[]
-        )
-    )
-
 
 
 key_map :  dict[AvailableKeys, KeyboardTouchs] = {
@@ -90,6 +79,8 @@ key_map :  dict[AvailableKeys, KeyboardTouchs] = {
     AvailableKeys.ENTER_KEY : KeysImplementations.ENTER_KEY,
     AvailableKeys.MUTE_KEY : KeysImplementations.MUTE_KEY,
     AvailableKeys.VOLUME_UP_KEY : KeysImplementations.VOLUME_UP_KEY,
+    AvailableKeys.START_PRESENTATION: KeysImplementations.START_PRESENTATION,
+    AvailableKeys.END_PRESENTATION: KeysImplementations.END_PRESENTATION,
     AvailableKeys.VOLUME_DOWN_KEY : KeysImplementations.VOLUME_DOWN_KEY,
 
     # Les combos
@@ -97,7 +88,5 @@ key_map :  dict[AvailableKeys, KeyboardTouchs] = {
     AvailableKeys.PASTE: KeysImplementations.PASTE,
     AvailableKeys.SELECT_ALL: KeysImplementations.SELECT_ALL,
     AvailableKeys.ALT_TAB: KeysImplementations.ALT_TAB,
-    AvailableKeys.START_PRESENTATION: KeysImplementations.START_PRESENTATION,
-    AvailableKeys.END_PRESENTATION: KeysImplementations.END_PRESENTATION,
 
 }
