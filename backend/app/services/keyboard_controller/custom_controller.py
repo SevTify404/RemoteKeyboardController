@@ -83,18 +83,14 @@ class CustomKeyboardController:
 
         Raises:
             NoActiveControllerException: Si aucun contrôleur n'est actif.
-            KeyError: Si la touche spécifiée n'existe pas.
+            KeyError: Si la touche spécifiée n'existe pas dans notre mapping.
         """
 
         async with self._state_lock:
             controller = self._verify_controller_running()
-
-            if key_name not in self._keys:
-                raise exceptions.TouchNotExistException(f"La touche '{key_name}' n'existe pas dans les touches définies.")
-
-            key_to_press = self._keys[key_name]
             client_alias = self._current_client_alias
 
+        key_to_press = self._keys[key_name]
         await key_to_press.execute_the_press(controller=controller)
         keyboard_logger.debug(f"⌨️ Touche '{key_name}' pressée par '{client_alias}'")
 

@@ -18,6 +18,6 @@ async def panel_websocket(websocket: WebSocket):
       continue
       
       
-  except WebSocketDisconnect:
+  except (WebSocketDisconnect, RuntimeError):
     await app_websocket_manager.disconnect_admin("Le coté Admin Panel s'est déconnecter")
 

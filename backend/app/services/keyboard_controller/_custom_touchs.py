@@ -36,7 +36,7 @@ class KeyboardCombination:
 
 class KeyboardTouchs(ABC):
     """Classe abstraite représentant une touche de clavier ou une combinaison de touches."""
-    _REALASE_DURATION: float = 0.02  # Durée en secondes entre l'appui et le relâchement d'une touche
+    _REALASE_DURATION: float = 0.01  # Durée en secondes entre l'appui et le relâchement d'une touche
 
     def __init__(self, touch: Union[KeyType, KeyboardCombination]):
         self._touch: Union[KeyType, KeyboardCombination] = touch
@@ -66,7 +66,6 @@ class SingleKeyTouch(KeyboardTouchs):
     async def execute_the_press(self, controller: Controller) -> None:
         """Appuie et relâche une seule touche."""
         controller.press(self._touch)
-        await sleep(self._REALASE_DURATION)
         controller.release(self._touch)
 
 
@@ -107,5 +106,3 @@ class KeyboardCombinationTouch(KeyboardTouchs):
                 await sleep(self._REALASE_DURATION)
                 controller.release(key)
                 await sleep(self._REALASE_DURATION)
-
-        await sleep(self._REALASE_DURATION)
