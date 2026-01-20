@@ -36,7 +36,7 @@ class KeyboardCombination:
 
 class KeyboardTouchs(ABC):
     """Classe abstraite représentant une touche de clavier ou une combinaison de touches."""
-    _REALASE_DURATION: float = 0.1  # Durée en secondes entre l'appui et le relâchement d'une touche
+    _REALASE_DURATION: float = 0.01  # Durée en secondes entre l'appui et le relâchement d'une touche
 
     def __init__(self, touch: Union[KeyType, KeyboardCombination]):
         self._touch: Union[KeyType, KeyboardCombination] = touch
