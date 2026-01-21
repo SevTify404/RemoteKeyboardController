@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import app_logger, log_startup_info, log_shutdown_info
 from app.core.config import LOCAL_IP
 from app.routes.auth_route import router as auth_router
+from app.routes.utils_route import router as utils_router
 from app.routes.ws_router import router as ws_router
 from app.utils.security.all_instances import store_manager
 
@@ -63,6 +64,7 @@ app.add_middleware(
 
 app.include_router(ws_router)
 app.include_router(auth_router)
+app.include_router(utils_router)
 
 @app.get("/", include_in_schema=False)
 async def root():

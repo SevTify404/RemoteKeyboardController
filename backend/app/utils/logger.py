@@ -87,7 +87,7 @@ def setup_logger(
 app_logger = setup_logger(
     'app',
     log_file=MAIN_LOG_FILE,
-    level=logging.DEBUG,
+    level=logging.INFO,
     console_level=logging.WARNING,
 )
 
@@ -95,7 +95,7 @@ app_logger = setup_logger(
 auth_logger = setup_logger(
     'auth',
     log_file=AUTH_LOG_FILE,
-    level=logging.DEBUG,
+    level=logging.INFO,
     console_level=logging.WARNING,
 )
 
@@ -103,7 +103,7 @@ auth_logger = setup_logger(
 websocket_logger = setup_logger(
     'websocket',
     log_file=WEBSOCKET_LOG_FILE,
-    level=logging.DEBUG,
+    level=logging.INFO,
     console_level=logging.ERROR,
 )
 
@@ -111,7 +111,7 @@ websocket_logger = setup_logger(
 keyboard_logger = setup_logger(
     'keyboard',
     log_file=KEYBOARD_LOG_FILE,
-    level=logging.DEBUG,
+    level=logging.INFO,
     console_level=logging.ERROR,
 )
 

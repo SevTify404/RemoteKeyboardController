@@ -5,6 +5,7 @@ from enum import Enum as enum
 @dataclass
 class ApiTags:
     AUTHENTIFICATION: str = "Authentification"
+    UTILS: str = "Utilitaires"
     
     
 class ErrorMessages(str, enum):
