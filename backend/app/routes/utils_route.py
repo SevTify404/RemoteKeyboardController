@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from fastapi.params import Depends
 
-from . import ApiTags, ErrorMessages, WssTypeMessage
+from . import ApiTags
 from app.schemas.utils_schema import IpView
 from ..auth.dependencies import local_only
 from ..utils.os_funcs import get_lan_ip
