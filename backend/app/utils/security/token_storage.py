@@ -52,7 +52,7 @@ class DeviceStore:
 
 
     def cleanup_expired_sessions(self) -> None:
-        now = datetime.now(UTC)
+        now = datetime.now()
         expired_tokens = [
             token for token, session in self._session_tokens.items()
             if session.expires_at < now
