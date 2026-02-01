@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+
 class ChallengeSchema(BaseModel):
   """schema pour valider les données d'un challenge"""
 

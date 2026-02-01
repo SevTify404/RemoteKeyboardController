@@ -9,7 +9,7 @@
 6. [Points clés d'implémentation](#points-clés-dimplémentation)
 
 ---
-
+ 
 ## Aperçu du workflow
 
 ### Étapes principales

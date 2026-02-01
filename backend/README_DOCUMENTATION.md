@@ -9,6 +9,7 @@ Bienvenue dans la documentation du système d'authentification de **RemoteKeyboa
 **Fichier :** `DOCUMENTATION_REACT_WEB.md`
 
 ### Contenu
+
 - ✅ Vue d'ensemble complète du workflow
 - ✅ Route POST `/auth/verify` - Structure exacte des requêtes/réponses
 - ✅ WebSocket `/ws/control-panel` - Communication bidirectionnelle

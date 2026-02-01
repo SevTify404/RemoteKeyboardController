@@ -8,7 +8,8 @@
 5. [Gestion des erreurs](#gestion-des-erreurs)
 6. [Points clés d'implémentation](#points-clés-dimplémentation)
 
----
+--- 
+
 
 ## Aperçu du workflow
 
