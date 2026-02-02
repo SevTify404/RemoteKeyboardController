@@ -1,8 +1,8 @@
-"""try:
+try:
     import uvloop
     uvloop.install()  # Nouvelle event loop optimisé à mort
 except Exception as exc:
-    print(f"Erreur lors de l'installation d'uvloop: {exc.__class__.__name__}\nFallBack à la boucle standard.")"""
+    print(f"Erreur lors de l'installation d'uvloop: {exc.__class__.__name__}\nFallBack à la boucle standard.")
 
 import asyncio
 import traceback
