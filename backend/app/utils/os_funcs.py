@@ -2,6 +2,8 @@ import socket
 from enum import Enum
 from platform import system
 
+from app import app_logger
+
 
 class OperatingSystem(str, Enum):
     LINUX = "linux"
@@ -29,6 +31,9 @@ def get_lan_ip():
         # Pas de connexion réelle, juste pour connaître l'interface utilisée
         s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
+    except OSError:
+        app_logger.critical("Arret du serveur : Vous n'etes connecté a aucun reseau Local")
+        exit(1)
     finally:
         s.close()
     return ip
